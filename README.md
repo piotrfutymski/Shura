@@ -1,0 +1,2 @@
+# Shura
+Dynamic multiplayer game
