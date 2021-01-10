@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+project(Shura)
+
+set(SFML_STATIC_LIBRARIES TRUE)
+add_subdirectory("lib/SFML")
+
+#========== SHURA TARGET ==========
+file(GLOB SHURA_SRC "src/*.cpp")
+add_executable(Shura "${SHURA_SRC}")
+target_compile_options(Shura PRIVATE -Wall)
+target_link_libraries(Shura sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
