@@ -35,7 +35,6 @@ public:
 int main()
 {
 
-
     Didax::Engine engine;
     engine.init("data/settings.json");
     std::shared_ptr<Gracz> gracz = std::make_shared<Gracz>();
@@ -47,8 +46,6 @@ int main()
     }).detach();
 
     engine.run();
-    
-    
 
 }
 
