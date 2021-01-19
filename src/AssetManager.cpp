@@ -44,6 +44,8 @@ bool Didax::AssetManager::loadAssetsFromFile(const std::string & filename)
 			a = createAsset<FontAsset>(element["name"]);
 		else if (element["type"] == "texture")
 			a = createAsset<TextureAsset>(element["name"]);
+		else if (element["type"] == "animation")
+			a = createAsset<AnimationAsset>(element["name"]);
 		else
 			return false;
 		try

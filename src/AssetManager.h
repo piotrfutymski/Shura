@@ -8,6 +8,7 @@
 #include "Asset.h"
 #include "TextureAsset.h"
 #include "FontAsset.h"
+#include "AnimationAsset.h"
 
 namespace Didax
 {

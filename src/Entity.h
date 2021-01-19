@@ -20,7 +20,7 @@ public:
         _name = name;
     }
 
-    virtual void update() = 0;
+    virtual void update(double dT) = 0;
     virtual void input(const sf::Event & evt) = 0;
     virtual void kill() = 0;
 
@@ -72,7 +72,7 @@ public:
         _gameObj = gameObj;      
     }
 
-    virtual void update()
+    virtual void update(double dt)
     {
         if(auto ptr = _gameObj.lock())
         {
@@ -87,7 +87,7 @@ public:
             {
                 ptr->onUpdate(_parent);
             }           
-            _update();
+            _update(dt);
         }
         else
         {
@@ -128,7 +128,7 @@ protected:
         _draw(target, states);
     }
 
-    virtual void _update() = 0;
+    virtual void _update(double dt) = 0;
     virtual void _input(const sf::Event & evt) = 0;
     virtual void _draw(sf::RenderTarget & target, sf::RenderStates states)const = 0;
 

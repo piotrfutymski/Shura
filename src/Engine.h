@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <memory>
 #include <string>
@@ -8,18 +10,18 @@
 #include <nlohmann/json.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "Entity.h"
+#include "Animable.h"
+#include "Sprite.h"
 #include "Window.h"
 #include "Input.h"
-#include "Entities.h"
+#include "AssetManager.h"
+
 
 #define getMyEntitySprite() getEntity<Didax::Sprite<std::remove_reference<decltype(*this)>::type>>(this);
-
+#define getMyEntityAnimable() getEntity<Didax::Animable<std::remove_reference<decltype(*this)>::type>>(this);
 
 namespace Didax
 {
-
-
 
 class Engine
 {

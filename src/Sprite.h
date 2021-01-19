@@ -6,14 +6,14 @@
 namespace Didax
 {
 
-class Engina;
+class Engine;
 
 template <typename T>
 class Sprite : public Entity<T>
 {
 public:
 
-    Sprite(Engine * parent, const std::string & name, std::shared_ptr<T> gameObj) :Entity<T>(parent, name, gameObj)       
+    Sprite(Engine * parent, const std::string & name, std::shared_ptr<T> gameObj) :Entity<T>(parent, name, gameObj)
     {}
 
     sf::Sprite * getSprite()
@@ -23,10 +23,7 @@ public:
 
     void setTexture(const std::string & name)
     {
-        auto t = AssetManager::getAsset<TextureAsset>(name);
-        t->_texture.isRepeated();
-
-        _sprite.setTexture(t->_texture);
+        _sprite.setTexture(AssetManager::getAsset<TextureAsset>(name)->_texture);
     }
     void setPosition(float x, float y)
     {
@@ -47,7 +44,7 @@ public:
 
 protected:
 
-    virtual void _update()
+    virtual void _update(double dt)
     {}
     virtual void _input(const sf::Event & evt)
     {}
@@ -55,8 +52,6 @@ protected:
     {
         target.draw(_sprite, states);
     }
-
-private:
 
     sf::Sprite _sprite;
 

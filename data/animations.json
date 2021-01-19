@@ -1,0 +1,16 @@
+{
+
+    "0": {
+      "type": "animation",
+      "name": "mario",
+      "texture": "data/graphix/mario.png",
+      "sizeX": 108,
+      "sizeY": 140,
+      "animations":{
+            "0":{"frames": 8, "speed": 8},
+            "1":{"frames": 8, "speed": 8}
+        }
+      }
+  
+}
+  

@@ -2,7 +2,11 @@
 
   "0": {
     "type": "texture",
-    "name": "../data/graphix/test.bmp"
+    "name": "data/graphix/test.bmp"
+    },
+   "1": {
+    "type": "texture",
+    "name": "data/graphix/mario.png"
     }
 
 }

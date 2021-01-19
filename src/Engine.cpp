@@ -56,7 +56,7 @@ void Engine::update()
 
 	// updating
     for(auto & en: _entities)
-        en->update();
+        en->update(_deltaT);
 
     bool ereased = false; 
     for (auto it = _entities.begin(); it != _entities.end(); )
