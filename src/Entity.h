@@ -1,0 +1,11 @@
+
+
+namespace Didax
+{
+
+class Entity
+{
+
+};
+
+}

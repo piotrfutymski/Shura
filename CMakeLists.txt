@@ -6,10 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 project(Shura)
 
 set(SFML_STATIC_LIBRARIES TRUE)
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory("lib/SFML")
+add_subdirectory("lib/nlohmann")
 
 #========== SHURA TARGET ==========
 file(GLOB SHURA_SRC "src/*.cpp")
 add_executable(Shura "${SHURA_SRC}")
 target_compile_options(Shura PRIVATE -Wall)
-target_link_libraries(Shura sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
+target_link_libraries(Shura sfml-graphics sfml-window sfml-system sfml-audio sfml-network nlohmann_json::nlohmann_json)
