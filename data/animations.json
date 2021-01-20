@@ -4,13 +4,38 @@
       "type": "animation",
       "name": "mario",
       "texture": "data/graphix/mario.png",
-      "sizeX": 108,
-      "sizeY": 140,
+      "sizeX": 120,
+      "sizeY": 130,
       "animations":{
-            "0":{"frames": 8, "speed": 8},
-            "1":{"frames": 8, "speed": 8}
+            "0":{"frames": 3, "speed": 5},
+            "1":{"frames": 3, "speed": 5},
+            "2":{"frames": 1, "speed": 5},
+            "3":{"frames": 3, "speed": 5},
+            "4":{"frames": 10, "speed": 10},
+            "5":{"frames": 10, "speed": 10},
+            "6":{"frames": 10, "speed": 10},
+            "7":{"frames": 10, "speed": 10}
         }
-      }
+      },
+      "1": {
+        "type": "animation",
+        "name": "explosion",
+        "texture": "data/graphix/explosion.png",
+        "sizeX": 100,
+        "sizeY": 100,
+        "animations":{
+              "0":{"frames": 9, "speed": 60},
+              "1":{"frames": 9, "speed": 60},
+              "2":{"frames": 9, "speed": 60},
+              "3":{"frames": 9, "speed": 60},
+              "4":{"frames": 9, "speed": 60},
+              "5":{"frames": 9, "speed": 60},
+              "6":{"frames": 9, "speed": 60},
+              "7":{"frames": 9, "speed": 60},
+              "8":{"frames": 9, "speed": 60},
+              "9":{"frames": 2, "speed": 60}
+          }
+        }
   
 }
   

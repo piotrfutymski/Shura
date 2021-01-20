@@ -55,6 +55,11 @@ public:
         _playing = false;
     }
 
+    bool playing()const
+    {
+        return _playing;
+    }
+
     void resetAnimation()
     {
         _frameNum = 0;
@@ -62,18 +67,21 @@ public:
         _sprite.setTextureRect(getActualRect());
     }
 
+protected:
+
     void nextFrame()
     {
         _elapsed = _elapsed - 1.0/_animation->_animationSpeeds[_animNum];
         if(_frameNum == _animation->_animationFrames[_animNum] -1)
+        {
             _frameNum = 0;
+            if(_playOnce)
+                _playing = false;
+        }          
         else
             _frameNum++;
         _sprite.setTextureRect(getActualRect());
     }
-
-
-protected:
 
     sf::Vector2f rectSize();
 
@@ -82,9 +90,7 @@ protected:
         if(_playing)
             _elapsed += dT;
         if(_playing && _elapsed > 1.0/_animation->_animationSpeeds[_animNum])
-            nextFrame();
-        if(_playOnce && _frameNum == 0)
-            _playing = false;
+            nextFrame();           
     }
     virtual void _input(const sf::Event & evt)
     {}

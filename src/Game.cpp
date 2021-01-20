@@ -2,7 +2,17 @@
 
 void Game::onUpdate(Didax::Engine * eng)
 {
-    eng->setCameraPosition(eng->getEntity<Didax::Animable<Player>>(_player.get())->getPosition() + sf::Vector2f{50,70});
+    eng->setCameraPosition(_player->getPosition() + sf::Vector2f{50,70});
+    timer-=eng->getDeltaT();
+    angle += eng->getDeltaT()*30;
+    if(angle > 360)
+        angle -= 360;
+    if(timer < 0.0f)
+    {
+        timer += 0.2f;
+        spawn_bullets(eng);
+    }
+
 }
 void Game::onStart(Didax::Engine * eng)
 {
@@ -19,10 +29,16 @@ void Game::onStart(Didax::Engine * eng)
     createTilesInRectangle(sf::IntRect{19,19,2,2},"wall", eng);
 
     eng->setCameraPosition({1000,1000});
-    _player = std::make_shared<Player>();
 
-    auto e = eng->addEntity<Didax::Animable<Player>>(_player, "Player");
-    e->setPosition(1000,1000);
+    _player = eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(), "Player");
+    _player->setPosition(1000,1000);
+    _player->setPriority(20);
+
+    std::vector<Didax::Entity_t *> obst;
+    for(auto & e: _wall)
+        obst.push_back(e);
+
+    _player->getGameObject()->addObstacles(obst);
 
 }
 void Game::onInput(Didax::Engine * eng, const sf::Event & e)
@@ -49,16 +65,39 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
             std::shared_ptr<Tile> t = std::make_shared<Tile>(tex, sf::Vector2f{rec.left*100.0f+i*100.0f, rec.top*100.0f+j*100.0f});
             if(name == "floor")
             {
-                _floor.push_back(t);
                 auto e = eng->addEntity<Didax::Sprite<Tile>>(t,name+std::to_string(_floor.size()));
                 e->setPriority(9);
+                _floor.push_back(e);
             }              
             else
             {
-                _wall.push_back(t);  
                 auto e = eng->addEntity<Didax::Sprite<Tile>>(t,name+std::to_string(_wall.size()));
                 e->setPriority(10);
+                _wall.push_back(e);
             }                        
         }
     }   
+}
+
+void Game::spawn_bullets(Didax::Engine * eng)
+{
+    std::vector<Didax::Entity_t *> obst;
+    for(auto & e: _wall)
+        obst.push_back(e);
+    
+    obst.push_back(_player);
+
+    std::shared_ptr<Bullet> t1 = std::make_shared<Bullet>(sf::Vector2f{1880,1880},sf::Vector2f{-450.0f,-450.0f});
+    std::shared_ptr<Bullet> t2 = std::make_shared<Bullet>(sf::Vector2f{2120,1880},sf::Vector2f{450.0f,-450.0f});
+    std::shared_ptr<Bullet> t3 = std::make_shared<Bullet>(sf::Vector2f{1880,2120},sf::Vector2f{-450.0f,450.0f});
+    std::shared_ptr<Bullet> t4 = std::make_shared<Bullet>(sf::Vector2f{2120,2120},sf::Vector2f{450.0f,450.0f});
+
+    auto e = eng->addEntity<Didax::Sprite<Bullet>>(t1,"bullet");
+    e->getGameObject()->addObstacles(obst);
+    e = eng->addEntity<Didax::Sprite<Bullet>>(t2,"bullet");
+    e->getGameObject()->addObstacles(obst);
+    e = eng->addEntity<Didax::Sprite<Bullet>>(t3,"bullet");
+    e->getGameObject()->addObstacles(obst);
+    e = eng->addEntity<Didax::Sprite<Bullet>>(t4,"bullet");
+    e->getGameObject()->addObstacles(obst);
 }

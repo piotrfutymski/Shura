@@ -76,12 +76,12 @@ public:
         return _size;
     }
 
-    bool dectectColision(Entity_t & sec)
+    bool dectectColision(Entity_t * sec)
     {
-        auto sizeU = sec.getSize();
-        auto posU = sec.getPosition();
-        if(_position.x >= posU.x && _position.x < posU.x + sizeU.x && 
-           _position.y >= posU.y && _position.y < posU.y + sizeU.y)
+        auto sizeU = sec->getSize();
+        auto posU = sec->getPosition();
+        if(_position.x +_size.x >= posU.x && _position.x < posU.x + sizeU.x  && 
+           _position.y + _size.y>= posU.y && _position.y < posU.y + sizeU.y )
            return true;
         return false;
     }
@@ -117,51 +117,37 @@ public:
 
     virtual void update(double dt)
     {
-        if(auto ptr = _gameObj.lock())
+        if(_added)
         {
-            if(_added)
-            {
-                _added = false;
-                if constexpr (detail::has_onStart<T, void(Engine *)>::value)
-                    if(auto ptr = _gameObj.lock())
-                        ptr->onStart(_parent);
-            }
-            if constexpr (detail::has_onUpdate<T, void(Engine *)>::value)
-            {
-                ptr->onUpdate(_parent);
-            }           
-            _update(dt);
+            _added = false;
+            if constexpr (detail::has_onStart<T, void(Engine *)>::value)
+                _gameObj->onStart(_parent);
         }
-        else
+        if constexpr (detail::has_onUpdate<T, void(Engine *)>::value)
         {
-            _toKill = true;
-        }    
+            _gameObj->onUpdate(_parent);
+        }           
+        _update(dt);   
     }
 
     virtual void input(const sf::Event & evt)
     {
-        if(auto ptr = _gameObj.lock())
+        if constexpr (detail::has_onInput<T, void(Engine *, const sf::Event &)>::value)
         {
-            if constexpr (detail::has_onInput<T, void(Engine *, const sf::Event &)>::value)
-            {
-                ptr->onInput(_parent, evt);
-            }
-            _input(evt);
+            _gameObj->onInput(_parent, evt);
         }
+        _input(evt);
     }
 
     virtual void kill()
     {
         if constexpr (detail::has_onKill<T, void(Engine *)>::value)
-                if(auto ptr = _gameObj.lock())
-                    ptr->onKill(_parent);
+            _gameObj->onKill(_parent);
     }
 
     T * getGameObject()
     {
-        if(auto ptr = _gameObj.lock())
-            return ptr.get();
-        return nullptr;
+        return _gameObj.get();
     }
 
 protected:
@@ -180,7 +166,7 @@ protected:
 
 protected:
 
-    std::weak_ptr<T> _gameObj;
+    std::shared_ptr<T> _gameObj;
 };
 
 }
