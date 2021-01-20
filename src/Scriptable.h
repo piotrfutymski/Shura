@@ -25,6 +25,11 @@ protected:
     virtual void _draw(sf::RenderTarget & target, sf::RenderStates states)const
     {}
 
+    virtual void updatePosition()
+    {}
+	virtual void updateSize()
+    {}
+
 };
 
 }

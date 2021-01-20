@@ -67,7 +67,21 @@ public:
 		return nullptr;
     }
 
+    void setCameraPosition(const sf::Vector2f & pos)
+    {
+        auto vi = _window.getWindow().getDefaultView();
+        vi.setCenter(pos);
+        _window.getWindow().setView(vi);
+    }
+    
+    void moveCamera(const sf::Vector2f & delta)
+    {
+        auto vi = _window.getWindow().getView();
+        vi.setCenter(vi.getCenter() + delta);
+        _window.getWindow().setView(vi);
+    }
 
+    void sortEntities();
 
 private:
 
@@ -86,14 +100,14 @@ private:
     void update();
     void render();
 
-    void sortEntities();
+    
     
 
     template<typename GameObject>
 	std::vector<std::unique_ptr<Entity_t>>::iterator _find(GameObject * obj)
 	{
 		return std::find_if(_entities.begin(), _entities.end(), [=](const auto & arg) {
-            if(auto d_arg = static_cast<Entity<GameObject>*>(arg.get()))
+            if(auto d_arg = dynamic_cast<Entity<GameObject>*>(arg.get()))
                 return d_arg->getGameObject() == obj;
 			return false;
 		});

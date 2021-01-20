@@ -7,6 +7,14 @@
    "1": {
     "type": "texture",
     "name": "data/graphix/mario.png"
+    },
+    "2": {
+    "type": "texture",
+    "name": "data/graphix/floor.png"
+    },
+   "3": {
+    "type": "texture",
+    "name": "data/graphix/wall.png"
     }
 
 }

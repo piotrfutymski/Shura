@@ -121,6 +121,44 @@ public:
         return nullptr;
     }
 
+    void setPosition(const sf::Vector2f & pos)
+    {
+        _position = pos;
+        updatePosition();
+    }
+	void setPosition(float x, float y)
+    {
+        setPosition({x,y});
+    }
+	void move(sf::Vector2f deltaS)
+    {
+        setPosition(_position + deltaS);
+    }
+	sf::Vector2f getPosition()const
+    {
+        return _position;
+    }
+    void setSize(const sf::Vector2f & s)
+    {
+        _size = s;
+        updateSize();
+    }
+    sf::Vector2f getSize()const
+    {
+        return _size;
+    }
+
+    template <typename U>
+    bool dectectColision(Entity<U> & sec)
+    {
+        auto sizeU = sec->getSize();
+        auto posU = sec->getPosition();
+        if(_position.x >= posU.x && _position.x < posU.x + sizeU.x && 
+           _position.y >= posU.y && _position.y < posU.y + sizeU.y)
+           return true;
+        return false;
+    }
+
 protected:
 
     virtual void draw(sf::RenderTarget & target, sf::RenderStates states)const
@@ -132,9 +170,14 @@ protected:
     virtual void _input(const sf::Event & evt) = 0;
     virtual void _draw(sf::RenderTarget & target, sf::RenderStates states)const = 0;
 
+    virtual void updatePosition() = 0;
+	virtual void updateSize() = 0;
+
 protected:
 
     std::weak_ptr<T> _gameObj;
+    sf::Vector2f _position{0,0};
+    sf::Vector2f _size{0,0};
 };
 
 }

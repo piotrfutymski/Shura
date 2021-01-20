@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sprite.h"
+#include "Entity.h"
 #include "AssetManager.h"
 #include "Engine.h"
 
@@ -17,16 +17,11 @@ public:
     Animable(Engine * parent, const std::string & name, std::shared_ptr<T> gameObj) :Entity<T>(parent, name, gameObj)
     {}
 
-
-    void setTexture(const std::string & name)
-    {
-        _sprite.setTexture(AssetManager::getAsset<TextureAsset>(name)->_texture);
-    }
-
     void setAnimationAsset(const std::string & name)
     {
         _animation = AssetManager::getAsset<AnimationAsset>(name);
         _sprite.setTexture(AssetManager::getAsset<TextureAsset>(_animation->_texture)->_texture);
+        this->setSize(_animation->_rectangleSize);
         setAnimation(0);
         resetAnimation();
     }
@@ -77,26 +72,6 @@ public:
         _sprite.setTextureRect(getActualRect());
     }
 
-    void setPosition(float x, float y)
-    {
-        _sprite.setPosition(x,y);
-    }
-    void setPosition(const sf::Vector2f & pos)
-    {
-        _sprite.setPosition(pos);
-    }
-    void move(float dx, float dy)
-    {
-        _sprite.move(dx,dy);
-    }
-    void move(const sf::Vector2f & pos)
-    {
-        _sprite.move(pos);
-    }
-     sf::Sprite * getSprite()
-    {
-        return &_sprite;
-    }
 
 protected:
 
@@ -117,6 +92,19 @@ protected:
     {
         target.draw(_sprite, states);
     }
+
+    virtual void updatePosition()
+    {
+        _sprite.setPosition(this->_position);
+    }
+	virtual void updateSize()
+    {
+        if (_sprite.getTexture() == nullptr)
+		    return;
+	    auto textureSize = _animation->_rectangleSize;
+	    _sprite.setScale({ this->_size.x / textureSize.x, this->_size.y / textureSize.y });
+    }
+
 
     AnimationAsset * _animation;
     bool _playOnce{false};

@@ -16,30 +16,10 @@ public:
     Sprite(Engine * parent, const std::string & name, std::shared_ptr<T> gameObj) :Entity<T>(parent, name, gameObj)
     {}
 
-    sf::Sprite * getSprite()
-    {
-        return &_sprite;
-    }
-
     void setTexture(const std::string & name)
     {
         _sprite.setTexture(AssetManager::getAsset<TextureAsset>(name)->_texture);
-    }
-    void setPosition(float x, float y)
-    {
-        _sprite.setPosition(x,y);
-    }
-    void setPosition(const sf::Vector2f & pos)
-    {
-        _sprite.setPosition(pos);
-    }
-    void move(float dx, float dy)
-    {
-        _sprite.move(dx,dy);
-    }
-    void move(const sf::Vector2f & pos)
-    {
-        _sprite.move(pos);
+        this->setSize({(float)(_sprite.getTexture()->getSize().x), (float)(_sprite.getTexture()->getSize().y)});
     }
 
 protected:
@@ -51,6 +31,17 @@ protected:
     virtual void _draw(sf::RenderTarget & target, sf::RenderStates states)const
     {
         target.draw(_sprite, states);
+    }
+    virtual void updatePosition()
+    {
+        _sprite.setPosition(this->_position);
+    }
+	virtual void updateSize()
+    {
+        if (_sprite.getTexture() == nullptr)
+		    return;
+	    auto textureSize = _sprite.getTexture()->getSize();
+	    _sprite.setScale({ this->_size.x / textureSize.x, this->_size.y / textureSize.y });
     }
 
     sf::Sprite _sprite;
