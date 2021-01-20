@@ -1,0 +1,13 @@
+{
+  "0": {
+    "type": "font",
+    "name": "data/fonts/arial.ttf"
+  },
+
+  "1": {
+    "type": "font",
+    "name": "data/fonts/DKNorthumbria.otf"
+  }
+
+  
+}

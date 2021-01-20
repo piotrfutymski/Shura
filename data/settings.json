@@ -1,0 +1,13 @@
+{
+  "windowSettings": {
+    "videoModeWidth": 1920,
+    "videoModeHeight": 1080,
+    "windowStyle": 0,
+    "framerateLimit": 1000
+  },
+  "assetsFileNames": {
+	  "assetsFonts":  "data/fonts.json",
+    "assetsTextures":  "data/textures.json",
+    "assetsAnimations":  "data/animations.json"
+  }
+}
