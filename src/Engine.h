@@ -12,6 +12,7 @@
 
 #include "Animable.h"
 #include "Sprite.h"
+#include "Scriptable.h"
 #include "Window.h"
 #include "Input.h"
 #include "AssetManager.h"
@@ -19,6 +20,7 @@
 
 #define getMyEntitySprite() getEntity<Didax::Sprite<std::remove_reference<decltype(*this)>::type>>(this);
 #define getMyEntityAnimable() getEntity<Didax::Animable<std::remove_reference<decltype(*this)>::type>>(this);
+#define getMyEntityScriptable() getEntity<Didax::Scriptable<std::remove_reference<decltype(*this)>::type>>(this);
 
 namespace Didax
 {
