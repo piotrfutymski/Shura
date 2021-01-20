@@ -9,6 +9,7 @@ public:
     {
         auto me = eng->getMyEntityAnimable()
         auto dT = eng->getDeltaT();
+
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             me->move({0,-dT*180});
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -17,7 +18,6 @@ public:
             me->move({0,dT*180});
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             me->move({dT*180,0});
-        
     }
 
     void onStart(Didax::Engine * eng)
@@ -59,6 +59,5 @@ public:
     bool w = true;
 
 private:
-
-    
+    std::vector<Didax::Entity_t*> obstacles;
 };

@@ -1,4 +1,4 @@
-
+#include "nlohmann/json.hpp"
 
 class SharedComponent{
 public:
@@ -9,8 +9,8 @@ int getID() const
     return id;
 }
 
-virtual json push() const = 0;
-virtual void pull(const json& data) = 0;
+virtual nlohmann::json push() const = 0;
+virtual void pull(const nlohmann::json& data) = 0;
 
 private:
     const int id;
