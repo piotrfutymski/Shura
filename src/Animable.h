@@ -67,6 +67,17 @@ public:
         _sprite.setTextureRect(getActualRect());
     }
 
+    void setColor(const sf::Color & c)
+    {
+        _sprite.setColor(c);
+    }
+
+    sf::Color getColor()const
+    {
+        return _sprite.getColor();
+    }
+
+
 protected:
 
     void nextFrame()

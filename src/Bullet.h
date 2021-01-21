@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine.h"
 #include "Explosion.h"
+#include "Player.h"
 
 class Bullet
 {
@@ -41,6 +42,11 @@ public:
         obstacles = obs;
     }
 
+    void addPlayers(std::vector<Didax::Animable<Player>*> pl)
+    {
+        players = pl;
+    }
+
 private:
 
     bool isCollision(Didax::Engine * eng)
@@ -53,7 +59,20 @@ private:
                 continue;
 
             if(o->dectectColision(static_cast<Didax::Entity_t*>(me)))
+            {   
+                for(auto p: players)
+                {
+                    if(o == static_cast<Didax::Entity_t*>(p))
+                    {
+                        if(!p->getGameObject()->isFlittering() && !p->getGameObject()->isHaveingArtifact())
+                            p->getGameObject()->minusHP();
+                        if(p->getGameObject()->isHaveingArtifact())
+                            return false;
+                    }
+                }
                 return true;
+            }
+                
         }
         return false;
     }
@@ -62,6 +81,6 @@ private:
     sf::Vector2f position;
     Didax::Sprite<Bullet> * me = nullptr;
     std::vector<Didax::Entity_t*> obstacles;
-
+    std::vector<Didax::Animable<Player>*> players;
 
 };

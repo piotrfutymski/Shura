@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "Bullet.h"
 #include "Explosion.h"
+#include "Artifact.h"
 #include "math.h"
 
 class Game
@@ -24,7 +25,9 @@ private:
 
     std::vector<Didax::Sprite<Tile>*> _floor;
     std::vector<Didax::Sprite<Tile>*> _wall;
-    Didax::Animable<Player>* _player;
+    Didax::Animable<Player>* _playerMain;
+    Didax::Animable<Player>* _playerArtifact;
+    std::vector<Didax::Animable<Player>*> _players;
 
     void createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng);
     void spawn_bullets(Didax::Engine * eng);

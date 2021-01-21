@@ -48,6 +48,7 @@ public:
         auto res = entity.get();
         _entities.push_back(std::move(entity));
         _entityAdded++;
+        res->start();
         return res;
     }
 

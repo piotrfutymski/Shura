@@ -23,5 +23,9 @@
     "5": {
     "type": "texture",
     "name": "data/graphix/bullet.png"
-    }
+    },
+    "6": {
+      "type": "texture",
+      "name": "data/graphix/artifact.png"
+      }
 }

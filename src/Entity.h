@@ -23,6 +23,7 @@ public:
     virtual void update(double dT) = 0;
     virtual void input(const sf::Event & evt) = 0;
     virtual void kill() = 0;
+    virtual void start() = 0;
 
     bool getToKill()const
     {
@@ -76,6 +77,16 @@ public:
         return _size;
     }
 
+    void setVisible(bool v)
+    {
+        _visible = v;
+    }
+
+    bool isVisible()const
+    {
+        return _visible;
+    }
+
     bool dectectColision(Entity_t * sec)
     {
         auto sizeU = sec->getSize();
@@ -94,6 +105,7 @@ protected:
 
     bool _toKill{false};
     bool _added{true};
+    bool _visible{true};
     int _priority{0};
 
     virtual void updatePosition() = 0;
@@ -119,15 +131,19 @@ public:
     {
         if(_added)
         {
-            _added = false;
-            if constexpr (detail::has_onStart<T, void(Engine *)>::value)
-                _gameObj->onStart(_parent);
+            _added = false;            
         }
         if constexpr (detail::has_onUpdate<T, void(Engine *)>::value)
         {
             _gameObj->onUpdate(_parent);
         }           
         _update(dt);   
+    }
+
+    virtual void start()
+    {
+        if constexpr (detail::has_onStart<T, void(Engine *)>::value)
+             _gameObj->onStart(_parent);
     }
 
     virtual void input(const sf::Event & evt)
