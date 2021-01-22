@@ -21,6 +21,7 @@
 
     void Bullet::onKill(Didax::Engine * eng)
     {
+        bullets->erase(std::remove(bullets->begin(), bullets->end(), me), bullets->end());
        auto e = eng->addEntity<Didax::Animable<Explosion>>(std::make_shared<Explosion>(), "expl");
        e->setPosition(position);
     }
@@ -46,17 +47,21 @@
 
             if(o->dectectColision(static_cast<Didax::Entity_t*>(me)))
             {   
+                bool f = true;
                 for(auto p: players)
                 {
                     if(o == static_cast<Didax::Entity_t*>(p))
                     {
-                        if(!p->getGameObject()->isFlittering() && !p->getGameObject()->isHaveingArtifact())
+                        if(!p->getGameObject()->immune())
+                        {
                             p->getGameObject()->minusHP();
-                        if(p->getGameObject()->isHaveingArtifact())
-                            return false;
+                            return true;
+                        }
+                        else
+                            f = false; 
                     }
                 }
-                return true;
+                return f;
             }
                 
         }

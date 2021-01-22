@@ -36,12 +36,15 @@ private:
     bool client{false}; 
     std::string name;
 
-
     std::vector<Didax::Sprite<Tile>*> _floor;
     std::vector<Didax::Sprite<Tile>*> _wall;
-    Didax::Animable<Player>* _playerMain;
+    Didax::Animable<Player>* _playerMain{nullptr};
     Didax::Animable<Player>* _playerArtifact{nullptr};
     std::vector<Didax::Animable<Player>*> _players;
+    Didax::Sprite<Artifact> ** _artifact;
+    std::vector<Didax::Sprite<Bullet>*>_bullets;
+
+    int playerCount = 0;
 
     void createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng);
 

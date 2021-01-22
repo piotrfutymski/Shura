@@ -38,6 +38,7 @@ void ShuraClient::runGame(const std::string & name)
     game = std::make_shared<Game>(true);
     game->setName(name);
     engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
+    game->addPlayer(name);
     engine.run();
 }
 

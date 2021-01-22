@@ -7,15 +7,19 @@ class Artifact
 {
 public:
 
-    Artifact(const sf::Vector2f & pos)
+    Artifact(const sf::Vector2f & pos, Didax::Sprite<Artifact> ** m)
     {
+        m = &me;
         position = pos;
     }
 
     void onUpdate(Didax::Engine * eng)
     {
         if(isCollision())
-            me->setToKill();              
+        {
+            me->setToKill(); 
+            me = nullptr;
+        }          
     }
 
     void onStart(Didax::Engine * eng)
@@ -43,8 +47,9 @@ private:
                 continue;
 
             if(static_cast<Didax::Entity_t*>(o)->dectectColision(static_cast<Didax::Entity_t*>(me)))
-            {   
-                o->getGameObject()->giveArtifact();
+            {
+                if(!o->getGameObject()->immune())   
+                    o->getGameObject()->giveArtifact();
                 return true;
             }              
         }

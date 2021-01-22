@@ -29,7 +29,7 @@ public:
 
     void setColor(const sf::Color & c)
     {
-        _text.setColor(c);
+        _text.setFillColor(c);
     }
 
     void setFontSize(int s)

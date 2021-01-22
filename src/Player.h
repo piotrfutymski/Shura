@@ -8,7 +8,11 @@ class Player
 {
 public:
 
-    Player(int id): _id{id}{};
+    Player(int id, std::vector<Didax::Sprite<Bullet>*> * b)
+    {
+        _id = id;
+        _bullets = b;
+    };
 
     void addObstacles(std::vector<Didax::Entity_t*> obs);
 
@@ -34,10 +38,26 @@ public:
     void setBulletAngle(float a);
     float getBulletAngle();
 
+    void setName(const std::string & name);
+    std::string getName();
+
+    void setGhost();
+    void setNormal();
+    bool immune();
+
+    void setPlayers(std::vector<Didax::Animable<Player>*> pl)
+    {
+        players = pl;
+    }
+
 private:
     std::vector<Didax::Entity_t*> obstacles;
+    std::vector<Didax::Sprite<Bullet>*> * _bullets{nullptr};
+    std::vector<Didax::Animable<Player>*> players;
     Didax::Animable<Player> * me = nullptr;
     Didax::Text<HPLeftText> * hpleft = nullptr;
+
+    std::string name;
 
     sf::Color basicColor;
     int _id;               // used to choose start position itd.
@@ -55,6 +75,8 @@ private:
     float artifactTimer{0.5};
     float artifactSafe{5};
 
+    bool ghost{false};
+
 private:
 
     bool isCollision()
@@ -67,7 +89,23 @@ private:
                 continue;
 
             if(o->dectectColision(static_cast<Didax::Entity_t*>(me)))
-                return true;
+            {   
+                bool f = true;
+                for(auto p: players)
+                {
+                    if(o == static_cast<Didax::Entity_t*>(p))
+                    {
+                        if(!p->getGameObject()->immune() && !immune())
+                        {
+                            return true;
+                        }
+                        else
+                            f = false; 
+                    }
+                }
+                return f;
+            }
+                
         }
         return false;
     }
