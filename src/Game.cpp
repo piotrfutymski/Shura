@@ -107,6 +107,7 @@ void Game::onStart(Didax::Engine * eng)
         }
     }
 
+
     for (int i = 0; i < 4; i++)
     {
         std::vector<Didax::Entity_t *> obst;
@@ -172,7 +173,7 @@ void Game::pull_Keys(const nlohmann::json& gameInfo)
 {
     for(auto p: _players)
     {
-        std::string pName = p->getName();
+        std::string pName = p->getGameObject()->getName();
         if(!gameInfo.contains(pName))
             break;
         if(gameInfo[pName]["W"] && gameInfo[pName]["D"])
@@ -210,11 +211,76 @@ std::string Game::getName()
 
 void Game::getGameState(nlohmann::json& gameInfo)const       //SERVER
 {
+    for(auto p : _players)
+    {   
+        auto pname = p->getGameObject()->getName();
+        gameInfo[pname]["moving"] = p->getGameObject()->moving;
+        gameInfo[pname]["direction"] = p->getGameObject()->direction;
+        gameInfo[pname]["HP"] = p->getGameObject()->HP;
+        gameInfo[pname]["bullet"] = p->getGameObject()->bulletAngle;
+        gameInfo[pname]["flittering"] = p->getGameObject()->flittering;
+        gameInfo[pname]["flitteringTimer"] = p->getGameObject()->flitteringTimer;
+        gameInfo[pname]["flitterinLeft"] = p->getGameObject()->flitteringLeft;
+        gameInfo[pname]["haveArtifact"] = p->getGameObject()->haveArtifact;
+        gameInfo[pname]["artifactTimer"] = p->getGameObject()->artifactTimer;
+        gameInfo[pname]["artifactSafe"] = p->getGameObject()->artifactSafe;
+        gameInfo[pname]["ghost"] = p->getGameObject()->ghost;
+    } 
+    if(*_artifact == nullptr)
+    {
+        gameInfo["no_artifact"] = false;
+        gameInfo["artifact_x"] = 0;
+        gameInfo["artifact_y"] = 0;
+    }
+    else
+    {
+        gameInfo["no_artifact"] = true;
+        gameInfo["artifact_x"] = (*_artifact)->getGameObject()->position.x;
+        gameInfo["artifact_y"] = (*_artifact)->getGameObject()->position.y;
+    }
 
 }
-void Game::actualizeState(const nlohmann::json & gameInfo)   //CLIENT
+void Game::actualizeState(nlohmann::json & gameInfo)   //CLIENT
 {
+    for(nlohmann::json::iterator it = gameInfo["players"].begin(); it !=gameInfo["players"].end(); it++)
+    {
+        bool isthere = false;
+        for(auto p: _players)
+            if((*it) == p->getGameObject()->getName())
+            {
+                isthere = true;
+                break;
+            }             
 
+        if(!isthere)
+            addPlayer(name);
+    }
+
+    for(auto p : _players)
+    {   
+        auto pname = p->getGameObject()->getName();
+        p->getGameObject()->moving = gameInfo[pname]["moving"];
+        p->getGameObject()->direction = gameInfo[pname]["direction"];
+        p->getGameObject()->HP = gameInfo[pname]["HP"] ;
+        p->getGameObject()->bulletAngle = gameInfo[pname]["bullet"];
+        p->getGameObject()->flittering = gameInfo[pname]["flittering"];
+        p->getGameObject()->flitteringTimer = gameInfo[pname]["flitteringTimer"];
+        p->getGameObject()->flitteringLeft = gameInfo[pname]["flitterinLeft"];
+        p->getGameObject()->haveArtifact = gameInfo[pname]["haveArtifact"];
+        p->getGameObject()->artifactTimer = gameInfo[pname]["artifactTimer"];
+        p->getGameObject()->artifactSafe = gameInfo[pname]["artifactSafe"];
+        p->getGameObject()->ghost = gameInfo[pname]["ghost"];
+    }
+
+    if(!gameInfo["no_artifact"])
+    {
+       (*_artifact)->getGameObject()->position.x = gameInfo["artifact_x"];
+       (*_artifact)->getGameObject()->position.x = gameInfo["artifact_y"];
+    }
+    else
+    {
+        (*_artifact)->setToKill();
+    }
 }
 
 
@@ -233,5 +299,6 @@ void Game::removePlayer(const std::string & name)
         if(_players[i]->getGameObject()->getName() == name)
             _players[i]->getGameObject()->setGhost();
     }
+    playerCount--;
     
 }

@@ -77,7 +77,7 @@ void ShuraServer::clientWork(int fd)
             playerName = msg["register"];
             gameInfo["players"].emplace_back(playerName);
             response["priv"]["register"]=true;
-            std::cout << "Player " << playerName << " joined the game.";
+            std::cout << "Player " << playerName << " joined the game."<<std::endl;
             game->addPlayer(playerName);
         }
         else

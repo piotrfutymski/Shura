@@ -7,7 +7,7 @@ class Artifact
 {
 public:
 
-    Artifact(const sf::Vector2f & pos, Didax::Sprite<Artifact> ** m)
+    Artifact(const sf::Vector2f & pos, Didax::Sprite<Artifact> ** & m)
     {
         m = &me;
         position = pos;
@@ -35,6 +35,8 @@ public:
         players = pl;
     }
 
+    sf::Vector2f position;
+
 private:
 
     bool isCollision()
@@ -56,7 +58,6 @@ private:
         return false;
     }
 
-    sf::Vector2f position;
     Didax::Sprite<Artifact> * me = nullptr;
     std::vector<Didax::Animable<Player>*> players;
 

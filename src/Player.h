@@ -50,17 +50,6 @@ public:
         players = pl;
     }
 
-private:
-    std::vector<Didax::Entity_t*> obstacles;
-    std::vector<Didax::Sprite<Bullet>*> * _bullets{nullptr};
-    std::vector<Didax::Animable<Player>*> players;
-    Didax::Animable<Player> * me = nullptr;
-    Didax::Text<HPLeftText> * hpleft = nullptr;
-
-    std::string name;
-
-    sf::Color basicColor;
-    int _id;               // used to choose start position itd.
     bool moving{false};          
     float direction{0};
     int HP{10};
@@ -76,6 +65,19 @@ private:
     float artifactSafe{5};
 
     bool ghost{false};
+
+private:
+    std::vector<Didax::Entity_t*> obstacles;
+    std::vector<Didax::Sprite<Bullet>*> * _bullets{nullptr};
+    std::vector<Didax::Animable<Player>*> players;
+    Didax::Animable<Player> * me = nullptr;
+    Didax::Text<HPLeftText> * hpleft = nullptr;
+
+    std::string name;
+
+    sf::Color basicColor;
+    int _id;               // used to choose start position itd.
+   
 
 private:
 

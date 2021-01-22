@@ -23,11 +23,9 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
     
     std::string name = registerClient();
     isRunning = true;
-    auto serverUpdateThread = new std::thread([this](){ this->serverBinding(); });
+   
     runGame(name);
-    isRunning = false;
-    serverUpdateThread->join();
-    delete serverUpdateThread;
+    
     shutdown(sd, SHUT_RDWR);
     close(sd);
 }
@@ -40,11 +38,17 @@ void ShuraClient::runGame(const std::string & name)
     game->setName(name);
     engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
     game->addPlayer(name);
+    auto serverUpdateThread = new std::thread([this](){  this->serverBinding(); });
     engine.run();
+    isRunning = false;
+    serverUpdateThread->join();  
+    delete serverUpdateThread;
 }
 
 void ShuraClient::serverBinding()
-{
+{   
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(50ms);
      nlohmann::json msg;
      while(isRunning)
      {

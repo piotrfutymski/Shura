@@ -23,7 +23,7 @@ public:
     void pull_Keys(const nlohmann::json& gameInfo);         //SERVER
 
     void getGameState(nlohmann::json& gameInfo)const;       //SERVER
-    void actualizeState(const nlohmann::json & gameInfo);   //CLIENT
+    void actualizeState(nlohmann::json & gameInfo);   //CLIENT
 
     void setName(const std::string & name);
     std::string getName();
