@@ -12,8 +12,6 @@ int main(int argc, char ** argv)
       ShuraServer server;
       server.run(argv[1]);
    }
-   //Application app;
-   //app.run();
    return 0;
 }
 

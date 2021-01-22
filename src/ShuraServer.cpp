@@ -32,6 +32,7 @@ void ShuraServer::run(const char * portStr)
     std::string name;
     std::cin>>name;
     gameInfo["players"].emplace_back(name);
+
     runGame(name);
     isRunning = false;
     serverThread->join();
@@ -66,6 +67,9 @@ void ShuraServer::clientWork(int fd)
             break;
         }
         
+        game->pull_Keys(msg);
+        
+        game->getGameState(gameInfo);
         nlohmann::json response = gameInfo;
         
         if(msg.contains("register") && !gameInfo["players"].contains(msg["register"]))
