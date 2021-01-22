@@ -1,7 +1,8 @@
 #pragma once
 #include "Engine.h"
 #include "Explosion.h"
-#include "Player.h"
+
+class Player;
 
 class Bullet
 {
@@ -13,69 +14,16 @@ public:
         speed = sp;
     }
 
-    void onUpdate(Didax::Engine * eng)
-    {
-        auto dT = eng->getDeltaT();
-        position = position + dT*speed;
-        me->setPosition(position);
+    void onUpdate(Didax::Engine * eng);
+    void onStart(Didax::Engine * eng);
+    void onKill(Didax::Engine * eng);
+    void addObstacles(std::vector<Didax::Entity_t*> obs);
+    void addPlayers(std::vector<Didax::Animable<Player>*> pl);
 
-        if(isCollision(eng))
-            me->setToKill();              
-    }
-
-    void onStart(Didax::Engine * eng)
-    {
-        me = eng->getMyEntitySprite();
-        me->setTexture("data/graphix/bullet.png");
-        me->setPosition(position);
-        me->setPriority(15);
-    }
-
-    void onKill(Didax::Engine * eng)
-    {
-       auto e = eng->addEntity<Didax::Animable<Explosion>>(std::make_shared<Explosion>(), "expl");
-       e->setPosition(position);
-    }
-
-    void addObstacles(std::vector<Didax::Entity_t*> obs)
-    {
-        obstacles = obs;
-    }
-
-    void addPlayers(std::vector<Didax::Animable<Player>*> pl)
-    {
-        players = pl;
-    }
 
 private:
 
-    bool isCollision(Didax::Engine * eng)
-    {
-        for(auto o : obstacles)
-        {
-            if(o->getPosition().x - me->getPosition().x > 400 || o->getPosition().x - me->getPosition().x < -400)
-                continue;
-            if(o->getPosition().y - me->getPosition().y > 400 || o->getPosition().y - me->getPosition().y < -400)
-                continue;
-
-            if(o->dectectColision(static_cast<Didax::Entity_t*>(me)))
-            {   
-                for(auto p: players)
-                {
-                    if(o == static_cast<Didax::Entity_t*>(p))
-                    {
-                        if(!p->getGameObject()->isFlittering() && !p->getGameObject()->isHaveingArtifact())
-                            p->getGameObject()->minusHP();
-                        if(p->getGameObject()->isHaveingArtifact())
-                            return false;
-                    }
-                }
-                return true;
-            }
-                
-        }
-        return false;
-    }
+    bool isCollision(Didax::Engine * eng);
 
     sf::Vector2f speed;
     sf::Vector2f position;

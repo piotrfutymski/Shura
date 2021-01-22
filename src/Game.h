@@ -20,9 +20,6 @@ public:
 
 private:
 
-    float timer = 0.5;
-    float angle = 0;
-
     std::vector<Didax::Sprite<Tile>*> _floor;
     std::vector<Didax::Sprite<Tile>*> _wall;
     Didax::Animable<Player>* _playerMain;
@@ -30,7 +27,6 @@ private:
     std::vector<Didax::Animable<Player>*> _players;
 
     void createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng);
-    void spawn_bullets(Didax::Engine * eng);
 
 };
 

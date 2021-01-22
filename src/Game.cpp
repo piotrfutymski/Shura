@@ -3,12 +3,16 @@
 void Game::onUpdate(Didax::Engine * eng)
 {
     eng->setCameraPosition(_playerMain->getPosition() + sf::Vector2f{50,70});
-    timer-=eng->getDeltaT();
-    if(timer < 0.0f)
+    auto dT = eng->getDeltaT();
+    for (auto it = _players.begin(); it != _players.end(); )
     {
-        timer += 0.2f;
-        spawn_bullets(eng);
-    }
+        if (!(*it)->isVisible())
+        {
+            it = _players.erase(it);
+        }           
+        else
+            ++it;
+    } 
 
     for(auto p: _players)
     {
@@ -20,21 +24,79 @@ void Game::onUpdate(Didax::Engine * eng)
             auto x = _playerArtifact->getPosition().x - p->getPosition().x;
             auto y = _playerArtifact->getPosition().y - p->getPosition().y;
 
-            if(x*x+y*y <200*200)
+            if(x*x+y*y <200*200 && _playerArtifact->getGameObject()->getArtifactSafe() < 0)
             {
-                p->getGameObject()->giveArtifact(eng);
+                p->getGameObject()->giveArtifact();
                 _playerArtifact->getGameObject()->stealArtifact();
                 _playerArtifact->getGameObject()->reSpawn();
                 _playerArtifact = p;
             }
         }
+
+        if(p == _playerArtifact && p->getGameObject()->getArtifactTimmer() < 0)
+        {
+            std::vector<Didax::Entity_t *> obst;
+            for(auto & e: _wall)
+                obst.push_back(e);
+            for(auto &p: _players)
+                obst.push_back(p);
+            p->getGameObject()->spawnBullets(obst, _players, eng);
+        }
     }
+
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        _playerMain->getGameObject()->setMoveState(true, 45);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)&&sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        _playerMain->getGameObject()->setMoveState(true, 315);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)&&sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        _playerMain->getGameObject()->setMoveState(true, 135);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)&&sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        _playerMain->getGameObject()->setMoveState(true, 225);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        _playerMain->getGameObject()->setMoveState(true, 0);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        _playerMain->getGameObject()->setMoveState(true, 270);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        _playerMain->getGameObject()->setMoveState(true, 180);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        _playerMain->getGameObject()->setMoveState(true, 90);
+    else
+        _playerMain->getGameObject()->setMoveState(false, _playerMain->getGameObject()->getDirection());
+
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+       _playerMain->getGameObject()->setBulletAngle(_playerMain->getGameObject()->getBulletAngle() - dT*30);
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+       _playerMain->getGameObject()->setBulletAngle(_playerMain->getGameObject()->getBulletAngle() + dT*30);
+    
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::I)&&sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        _players[1]->getGameObject()->setMoveState(true, 45);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I)&&sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+        _players[1]->getGameObject()->setMoveState(true, 315);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::K)&&sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        _players[1]->getGameObject()->setMoveState(true, 135);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::J)&&sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        _players[1]->getGameObject()->setMoveState(true, 225);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
+        _players[1]->getGameObject()->setMoveState(true, 0);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+        _players[1]->getGameObject()->setMoveState(true, 270);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        _players[1]->getGameObject()->setMoveState(true, 180);
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        _players[1]->getGameObject()->setMoveState(true, 90);
+    else
+        _players[1]->getGameObject()->setMoveState(false, _players[1]->getGameObject()->getDirection());
+
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        _players[1]->getGameObject()->setBulletAngle(_players[1]->getGameObject()->getBulletAngle() - dT*80);
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        _players[1]->getGameObject()->setBulletAngle(_players[1]->getGameObject()->getBulletAngle() + dT*80);
+    
 
 }
 void Game::onStart(Didax::Engine * eng)
 {
     createTilesInRectangle(sf::IntRect{1,1,38,38},"floor", eng);
-
     createTilesInRectangle(sf::IntRect{0,0,1,40},"wall", eng);
     createTilesInRectangle(sf::IntRect{1,0,39,1},"wall", eng);
     createTilesInRectangle(sf::IntRect{1,39,39,1},"wall", eng);
@@ -44,10 +106,6 @@ void Game::onStart(Didax::Engine * eng)
     createTilesInRectangle(sf::IntRect{1,19,10,2},"wall", eng);
     createTilesInRectangle(sf::IntRect{29,19,10,2},"wall", eng);
     createTilesInRectangle(sf::IntRect{19,19,2,2},"wall", eng);
-
-   
-
-
     _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(0), "Player1"));
     _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(1), "Player2"));
     _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(2), "Player3"));
@@ -125,34 +183,4 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
             }                        
         }
     }   
-}
-
-void Game::spawn_bullets(Didax::Engine * eng)
-{
-    if(_playerArtifact == nullptr)
-        return;
-
-    std::vector<Didax::Entity_t *> obst;
-    for(auto & e: _wall)
-        obst.push_back(e);
-    for(auto &p: _players)
-        obst.push_back(p);
-
-    std::shared_ptr<Bullet> t1 = std::make_shared<Bullet>(_playerArtifact->getPosition(),sf::Vector2f{-450.0f,-450.0f});
-    std::shared_ptr<Bullet> t2 = std::make_shared<Bullet>(_playerArtifact->getPosition(),sf::Vector2f{450.0f,-450.0f});
-    std::shared_ptr<Bullet> t3 = std::make_shared<Bullet>(_playerArtifact->getPosition(),sf::Vector2f{-450.0f,450.0f});
-    std::shared_ptr<Bullet> t4 = std::make_shared<Bullet>(_playerArtifact->getPosition(),sf::Vector2f{450.0f,450.0f});
-
-    auto e = eng->addEntity<Didax::Sprite<Bullet>>(t1,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(_players);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t2,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(_players);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t3,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(_players);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t4,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(_players);
 }
