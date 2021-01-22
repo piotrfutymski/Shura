@@ -1,10 +1,20 @@
 #include "Application.h"
-
-
-int main()
+#include <iostream>
+#include "ShuraClient.h"
+int main(int argc, char ** argv)
 {
-   Application app;
-   app.run();
+   if(argc == 3)
+   {
+      ShuraClient client;
+      client.run(argv[1], argv[2]);
+   }
+   else if (argc == 2)
+   {
+      ShuraServer server;
+      server.run(argv[1]);
+   }
+   //Application app;
+   //app.run();
    return 0;
 }
 
