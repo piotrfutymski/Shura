@@ -116,7 +116,7 @@ float Player::getDirection()const
 
 void Player::spawnBullets(const std::vector<Didax::Entity_t *> & obst, const std::vector<Didax::Animable<Player> *> & players, Didax::Engine * eng)
 {
-    artifactTimer = 0.2f;
+    artifactTimer = 0.4f;
 
     auto posx = me->getPosition().x + me->getSize().x/2;
     auto posy = me->getPosition().y + me->getSize().y/2;
