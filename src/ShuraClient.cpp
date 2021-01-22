@@ -1,7 +1,7 @@
 #include "ShuraClient.h"
 
 
-ShuraClient::ShuraClient() : sd(-1), gameinfo() {}
+ShuraClient::ShuraClient() : isRunning(false), sd(-1) {}
 
 void ShuraClient::run(const char *ipStr, const char *portStr)
 {
@@ -22,9 +22,10 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
     freeaddrinfo(resolved);
     
     std::string name = registerClient();
-    
+    isRunning = true;
     auto serverUpdateThread = new std::thread([this](){ this->serverBinding(); });
     runGame(name);
+    isRunning = false;
     serverUpdateThread->join();
     delete serverUpdateThread;
     shutdown(sd, SHUT_RDWR);
@@ -43,6 +44,24 @@ void ShuraClient::runGame(const std::string & name)
 
 void ShuraClient::serverBinding()
 {
+     nlohmann::json msg;
+     while(isRunning)
+     {
+        game->push_Keys(msg);
+
+        std::string data = msg.dump();
+        int len = data.size();
+        write(sd, &len, sizeof(int));
+        write(sd, data.c_str(), len);
+
+        msg.clear();
+        recv(sd, &len, sizeof(int), MSG_WAITALL);
+        std::vector<char> buf(len);
+        recv(sd, buf.data(), len, MSG_WAITALL);
+        msg = nlohmann::json::parse(buf.data());
+        
+        game->actualizeState(msg);
+     }
 
 }
 
@@ -52,7 +71,6 @@ std::string ShuraClient::registerClient()
     std::cout<< "Choose your hero name: ";
     while(true)
     {   
-        
         std::cin >> name;
 
         nlohmann::json tmp;

@@ -20,8 +20,8 @@ public:
     void serverBinding();
     void runGame(const std::string & name);
 private:
+    bool isRunning;
     int sd;
-    nlohmann::json gameinfo;
     std::shared_ptr<Game> game;
 
     std::string registerClient();
