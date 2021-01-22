@@ -14,7 +14,7 @@ public:
 
     void onUpdate(Didax::Engine * eng)
     {
-        if(isCollision(eng))
+        if(isCollision())
             me->setToKill();              
     }
 
@@ -33,7 +33,7 @@ public:
 
 private:
 
-    bool isCollision(Didax::Engine * eng)
+    bool isCollision()
     {
         for(auto o : players)
         {
@@ -44,7 +44,7 @@ private:
 
             if(static_cast<Didax::Entity_t*>(o)->dectectColision(static_cast<Didax::Entity_t*>(me)))
             {   
-                o->getGameObject()->giveArtifact(eng);
+                o->getGameObject()->giveArtifact();
                 return true;
             }              
         }
