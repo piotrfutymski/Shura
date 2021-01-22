@@ -1,6 +1,7 @@
 #include "ShuraClient.h"
 
-ShuraClient::ShuraClient() : sd(-1), game() {}
+
+ShuraClient::ShuraClient() : sd(-1), gameinfo() {}
 
 void ShuraClient::run(const char *ipStr, const char *portStr)
 {
@@ -20,11 +21,27 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
         throw std::runtime_error("connect error");
     freeaddrinfo(resolved);
 
-    game["register"] = "Kuba";
-    std::string data = game.dump();
-    size_t len = data.size();
-    write(sd, &len, sizeof(size_t));
+    gameinfo["register"] = "Kuba";
+    std::string data = gameinfo.dump();
+    int len = data.size();
+    write(sd, &len, sizeof(int));
     write(sd, data.c_str(), len);
-
+    auto serverUpdateThread = new std::thread([this](){ this->serverBinding(); });
+    runGame();
+    shutdown(sd, SHUT_RDWR);
     close(sd);
+}
+
+void ShuraClient::runGame()
+{
+    Didax::Engine engine;
+    engine.init("data/settings.json");
+    game = std::make_shared<Game>();
+    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
+    engine.run();
+}
+
+void ShuraClient::serverBinding()
+{
+
 }

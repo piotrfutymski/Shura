@@ -74,10 +74,11 @@ void ShuraServer::clientWork(int fd)
             response["priv"]["register"]=false;
 
         std::string data = response.dump();
-        std::size_t len = data.length();
-        write(fd, &len, sizeof(std::size_t));
-        write(fd, data.c_str(), len);
+        int len = data.length();
+        write(fd, &len, sizeof(int));      
+        write(fd, data.c_str(), len);             
     }
+
     shutdown(fd, SHUT_RDWR);
     close(fd);
 }

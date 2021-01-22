@@ -1,4 +1,3 @@
-#include "Application.h"
 #include <iostream>
 #include "ShuraClient.h"
 int main(int argc, char ** argv)
