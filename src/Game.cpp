@@ -4,15 +4,6 @@ void Game::onUpdate(Didax::Engine * eng)
 {
     eng->setCameraPosition(_playerMain->getPosition() + sf::Vector2f{50,70});
     auto dT = eng->getDeltaT();
-    for (auto it = _players.begin(); it != _players.end(); )
-    {
-        if (!(*it)->isVisible())
-        {
-            it = _players.erase(it);
-        }           
-        else
-            ++it;
-    } 
 
     for(auto p: _players)
     {
@@ -183,4 +174,31 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
             }                        
         }
     }   
+}
+
+
+nlohmann::json Game::push() const
+{
+    nlohmann::json data;
+    data[name]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+    data[name]["A"] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+    data[name]["S"] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+    data[name]["D"] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+    data[name]["left"] = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
+    data[name]["right"] = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
+    return data;
+}
+void Game::pull(const nlohmann::json& data)
+{
+    //p->getGameObject()->setMoveState(d)
+}
+
+void Game::setName(const std::string & n)
+{
+    name = n;
+}
+
+std::string Game::getName()
+{
+    return name;
 }

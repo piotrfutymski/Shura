@@ -28,22 +28,20 @@ void ShuraServer::run(const char * portStr)
     std::cout << "Server running on " << portStr << std::endl;
     serverThread = new std::thread([this](){ this->serverWork(); });
     std::string input;
-    while(isRunning)
-    {
-        std::cin >> input;
-        if(input == "exit")
-        {
-            isRunning = false;
-        }
-        else
-        {
-            std::cout << "Undefined command" << std::endl;
-        }
-    }
-
+    std::cout<< "Choose your hero name: ";
+    std::string name;
+    std::cin>>name;
+    gameInfo["players"].emplace_back(name);
+    runGame(name);
+    isRunning = false;
     serverThread->join();
+    delete serverThread;
     for(std::thread* t : clientThreads)
+    {
+        delete t;
         t->join();
+    }
+    clientThreads.clear();      
     close(sd);
     sd = -1;
 }
@@ -60,13 +58,20 @@ void ShuraServer::clientWork(int fd)
         std::vector<char> tmp(msgSize);
         if(recv(fd, tmp.data(), msgSize, MSG_WAITALL) == -1)
             break;
-        msg = nlohmann::json::parse(tmp.data());
-        nlohmann::json response = game;
+        try{
+            msg = nlohmann::json::parse(tmp.data());
+        }
+        catch(const std::exception & e)
+        {
+            break;
+        }
         
-        if(msg.contains("register") && !game["players"].contains(msg["register"]))
+        nlohmann::json response = gameInfo;
+        
+        if(msg.contains("register") && !gameInfo["players"].contains(msg["register"]))
         {
             playerName = msg["register"];
-            game["players"].emplace_back(playerName);
+            gameInfo["players"].emplace_back(playerName);
             response["priv"]["register"]=true;
             std::cout << "Player " << playerName << " joined the game.";
         }
@@ -88,7 +93,7 @@ void ShuraServer::serverWork()
     {
         sockaddr_in connectionInf = {};
         socklen_t infLen=sizeof(connectionInf);
-        int fd = accept4(sd, (sockaddr*)&connectionInf, &infLen, SOCK_NONBLOCK);
+        int fd = accept(sd, (sockaddr*)&connectionInf, &infLen);
         if(fd != -1)
         {
             std::cout << "New connection from " << inet_ntoa(connectionInf.sin_addr) << std::endl;
@@ -100,4 +105,14 @@ void ShuraServer::serverWork()
             std::this_thread::sleep_for(2000ms);
         }
     }
+}
+
+void ShuraServer::runGame(const std::string & name)
+{
+    Didax::Engine engine;
+    engine.init("data/settings.json");
+    game = std::make_shared<Game>(false);
+    game->setName(name);
+    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
+    engine.run();
 }

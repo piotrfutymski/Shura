@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <string>
 #include "nlohmann/json.hpp"
+#include "Game.h"
 
 class ShuraServer
 {
@@ -22,12 +23,15 @@ public:
 
     void run(const char * portStr);
 
+    void runGame(const std::string & name);
+
 private:
 
     sockaddr_in localAddress;
     int sd;
     bool isRunning;
-    nlohmann::json game;
+    nlohmann::json gameInfo;
+    std::shared_ptr<Game> game;
 
     std::vector<std::thread*> clientThreads;
     std::thread* serverThread;

@@ -18,9 +18,13 @@ public:
     ShuraClient& operator=(ShuraClient&&) = delete;
     void run(const char * ipStr, const char * portStr);
     void serverBinding();
-    void runGame();
+    void runGame(const std::string & name);
 private:
     int sd;
     nlohmann::json gameinfo;
     std::shared_ptr<Game> game;
+
+    std::string registerClient();
+
+
 };

@@ -53,7 +53,6 @@ void Engine::update()
 	auto time = _clock.getElapsedTime();
 	_clock.restart();
 	_deltaT = time.asSeconds();
-    std::cout<<1/_deltaT<<"\n";
 	// updating
     for(size_t i = 0; i < _entities.size(); i++)
     {
