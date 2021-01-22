@@ -15,6 +15,17 @@
    "3": {
     "type": "texture",
     "name": "data/graphix/wall.png"
-    }
-
+    },
+    "4": {
+      "type": "texture",
+      "name": "data/graphix/explosion.png"
+      },
+    "5": {
+    "type": "texture",
+    "name": "data/graphix/bullet.png"
+    },
+    "6": {
+      "type": "texture",
+      "name": "data/graphix/artifact.png"
+      }
 }

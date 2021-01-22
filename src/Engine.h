@@ -18,9 +18,9 @@
 #include "AssetManager.h"
 
 
-#define getMyEntitySprite() getEntity<Didax::Sprite<std::remove_reference<decltype(*this)>::type>>(this);
-#define getMyEntityAnimable() getEntity<Didax::Animable<std::remove_reference<decltype(*this)>::type>>(this);
-#define getMyEntityScriptable() getEntity<Didax::Scriptable<std::remove_reference<decltype(*this)>::type>>(this);
+#define getMyEntitySprite() getEntity<Didax::Sprite<std::remove_reference<decltype(*this)>::type>>(this)
+#define getMyEntityAnimable() getEntity<Didax::Animable<std::remove_reference<decltype(*this)>::type>>(this)
+#define getMyEntityScriptable() getEntity<Didax::Scriptable<std::remove_reference<decltype(*this)>::type>>(this)
 
 namespace Didax
 {
@@ -47,7 +47,8 @@ public:
         auto entity = std::make_unique<T>(this, name, gameObj);
         auto res = entity.get();
         _entities.push_back(std::move(entity));
-        sortEntities();
+        _entityAdded++;
+        res->start();
         return res;
     }
 
@@ -67,6 +68,15 @@ public:
 		return nullptr;
     }
 
+    template<typename GameObject>
+    Entity_t* getEntity(GameObject * obj)
+    {
+        if (auto it = _find<GameObject>(obj); it != _entities.end())
+            return it->get();
+        return nullptr;
+    }
+
+
     void setCameraPosition(const sf::Vector2f & pos)
     {
         auto vi = _window.getWindow().getDefaultView();
@@ -81,7 +91,7 @@ public:
         _window.getWindow().setView(vi);
     }
 
-    void sortEntities();
+    
 
 private:
 
@@ -92,6 +102,10 @@ private:
     nlohmann::json _settings;
     sf::Clock _clock;
     Window _window;
+
+    void sortEntities();
+
+    int _entityAdded = 0;
 
 
 private:

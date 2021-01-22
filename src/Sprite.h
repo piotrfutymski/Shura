@@ -22,6 +22,16 @@ public:
         this->setSize({(float)(_sprite.getTexture()->getSize().x), (float)(_sprite.getTexture()->getSize().y)});
     }
 
+    void setColor(const sf::Color & c)
+    {
+        _sprite.setColor(c);
+    }
+
+    sf::Color getColor()const
+    {
+        return _sprite.getColor();
+    }
+
 protected:
 
     virtual void _update(double dt)

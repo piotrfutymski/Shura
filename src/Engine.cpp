@@ -53,10 +53,17 @@ void Engine::update()
 	auto time = _clock.getElapsedTime();
 	_clock.restart();
 	_deltaT = time.asSeconds();
-
+    std::cout<<1/_deltaT<<"\n";
 	// updating
-    for(auto & en: _entities)
-        en->update(_deltaT);
+    for(size_t i = 0; i < _entities.size(); i++)
+    {
+        _entities[i]->update(_deltaT);        
+    }
+    if(_entityAdded != 0)
+    {
+        sortEntities();
+        _entityAdded = 0;
+    }
 
     bool ereased = false; 
     for (auto it = _entities.begin(); it != _entities.end(); )
@@ -79,7 +86,7 @@ void Engine::render()
 	_window.getWindow().clear(sf::Color{ 0,0,0,255 });
 
 	//rendering
-
+    
     for(auto & en: _entities)
 	    _window.getWindow().draw(*en.get());
 
