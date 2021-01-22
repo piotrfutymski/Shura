@@ -9,6 +9,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <string>
+#include <fcntl.h>
 #include "nlohmann/json.hpp"
 #include "Game.h"
 

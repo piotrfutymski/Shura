@@ -177,7 +177,7 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
 }
 
 
-nlohmann::json Game::push() const
+void Game::push_Keys(nlohmann::json& gameInfo) const
 {
     nlohmann::json data;
     data[name]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
@@ -188,7 +188,7 @@ nlohmann::json Game::push() const
     data[name]["right"] = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
     return data;
 }
-void Game::pull(const nlohmann::json& data)
+void Game::pull_Keys(const nlohmann::json& gameInfo)
 {
     //p->getGameObject()->setMoveState(d)
 }

@@ -22,7 +22,7 @@ void ShuraServer::run(const char * portStr)
     
     if(listen(sd, SOMAXCONN) != 0)
         throw std::runtime_error("listen error");
-
+    fcntl(sd, F_SETFL, O_NONBLOCK, 1);
     isRunning = true;
 
     std::cout << "Server running on " << portStr << std::endl;
@@ -48,7 +48,7 @@ void ShuraServer::run(const char * portStr)
 
 void ShuraServer::clientWork(int fd)
 {
-    std::string playerName;
+    std::string playerName="";
     while(isRunning)
     {
         nlohmann::json msg;
@@ -74,6 +74,7 @@ void ShuraServer::clientWork(int fd)
             gameInfo["players"].emplace_back(playerName);
             response["priv"]["register"]=true;
             std::cout << "Player " << playerName << " joined the game.";
+            game->addPlayer(playerName);
         }
         else
             response["priv"]["register"]=false;
@@ -84,6 +85,7 @@ void ShuraServer::clientWork(int fd)
         write(fd, data.c_str(), len);             
     }
 
+    game->removePlayer(playerName);
     shutdown(fd, SHUT_RDWR);
     close(fd);
 }

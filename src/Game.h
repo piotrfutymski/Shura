@@ -7,9 +7,8 @@
 #include "Explosion.h"
 #include "Artifact.h"
 #include "math.h"
-#include "SharedComponent.h"
 
-class Game : SharedComponent
+class Game
 {
 public:
 
@@ -20,16 +19,17 @@ public:
     void onInput(Didax::Engine * eng, const sf::Event & e);
     void onKill(Didax::Engine * eng);
 
-    virtual nlohmann::json push() const;
-    virtual void pull(const nlohmann::json& data);
+    void push_Keys(nlohmann::json& gameInfo) const;         //CLIENT
+    void pull_Keys(const nlohmann::json& gameInfo);         //SERVER
 
-    nlohmann::json getGameState()const;
-    void actualizeState(const nlohmann::json & state);
+    void getGameState(nlohmann::json& gameInfo)const;       //SERVER
+    void actualizeState(const nlohmann::json & gameInfo);   //CLIENT
 
     void setName(const std::string & name);
     std::string getName();
 
     void addPlayer(const std::string & name);
+    void removePlayer(const std::string & name);
 
 private:
 
