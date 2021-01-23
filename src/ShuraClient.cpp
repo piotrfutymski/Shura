@@ -3,7 +3,7 @@
 
 ShuraClient::ShuraClient() : isRunning(false), sd(-1) {}
 
-void ShuraClient::run(const char *ipStr, const char *portStr)
+void ShuraClient::prepareSocket(const char *ipStr, const char * portStr)
 {
     addrinfo hints = {};
     hints.ai_family = AF_INET;
@@ -20,54 +20,56 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
     if(connect(sd, resolved->ai_addr, resolved->ai_addrlen) != 0)
         throw std::runtime_error("connect error");
     freeaddrinfo(resolved);
-    
+}
+
+void ShuraClient::run(const char *ipStr, const char *portStr)
+{
+    prepareSocket(ipStr, portStr);
     std::string name = registerClient();
-    isRunning = true;
    
-    runGame(name);
+    engine.init("data/settings.json");
+    game = std::make_shared<Game>(true, name, _id);
+    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
+
+    isRunning = true;
+    auto serverUpdateThread = new std::thread([this](){  
+        try{
+            this->serverBinding();
+        }
+        catch(std::exception) {;}
+        });
+
+    engine.run();
+    isRunning = false;
+    serverUpdateThread->join();  
+    delete serverUpdateThread;
     
     shutdown(sd, SHUT_RDWR);
     close(sd);
 }
 
-void ShuraClient::runGame(const std::string & name)
-{
-    engine.init("data/settings.json");
-    game = std::make_shared<Game>(true, name, _id);
-    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
-    auto serverUpdateThread = new std::thread([this](){  this->serverBinding(); });
-    engine.run();
-    isRunning = false;
-    serverUpdateThread->join();  
-    delete serverUpdateThread;
-}
-
 void ShuraClient::serverBinding()
 {   
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(50ms); 
-     while(isRunning)
-     {
-        nlohmann::json msg;
-        msg["pls_dont_be_null"] = "ok";
-        engine.lock();
-        game->push_Keys(msg);
-        engine.unlock();
+    //using namespace std::chrono_literals;
+    //std::this_thread::sleep_for(50ms); 
+    nlohmann::json msg = Network::receiveMsg(sd);
+    if(!msg.contains("start"))
+        return;
+    nlohmann::json keys;
+    while(isRunning)
+    {
+       keys["pls_dont_be_null"] = "ok";
+       game->push_Keys(keys);
 
-        std::string data = msg.dump();
-        int len = data.size();
-        write(sd, &len, sizeof(int));
-        write(sd, data.c_str(), len);
-
-        msg.clear();
-        recv(sd, &len, sizeof(int), MSG_WAITALL);
-        std::vector<char> buf(len);
-        recv(sd, buf.data(), len, MSG_WAITALL);
-        msg = nlohmann::json::parse(buf.begin(), buf.end());
-        engine.lock();
-        game->actualizeState(msg);
-        engine.unlock();
-     }
+       Network::sendMsg(sd, keys);
+       msg = Network::receiveMsg(sd);
+       if(msg.contains("end"))
+            break;
+            
+       engine.lock();
+       game->actualizeState(msg);
+       engine.unlock();
+    }
 
 }
 
@@ -80,28 +82,16 @@ std::string ShuraClient::registerClient()
         std::cin >> name;
 
         nlohmann::json tmp;
-
         tmp["register"] = name;
-        std::string data = tmp.dump();
-        int len = data.size();
-        write(sd, &len, sizeof(int));
-        write(sd, data.c_str(), len);
+        Network::sendMsg(sd, tmp);
 
-        nlohmann::json msg;
-        int msgSize;
-        if(recv(sd, &msgSize, sizeof(int), MSG_WAITALL) == -1)
-            throw std::runtime_error("register error");
-        std::vector<char> buf(msgSize);
-        if(recv(sd, buf.data(), msgSize, MSG_WAITALL) == -1)
-            throw std::runtime_error("register error");
-        msg = nlohmann::json::parse(buf.begin(), buf.end());
+        nlohmann::json msg = Network::receiveMsg(sd);
         if(msg["priv"]["register"])
         {
             _id = msg["priv"]["id"]; 
             break;   
         }         
         std::cout<< "Somebody has this name, choose another: ";
-          
     }
     
     return name;

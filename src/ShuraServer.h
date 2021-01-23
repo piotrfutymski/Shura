@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include "nlohmann/json.hpp"
 #include "Game.h"
+#include "Network.h"
 
 class ShuraServer
 {
@@ -24,22 +25,26 @@ public:
 
     void run(const char * portStr);
 
-    void runGame(const std::string & name);
-
 private:
 
     sockaddr_in localAddress;
     int sd;
-    bool isRunning;
     nlohmann::json gameInfo;
     std::shared_ptr<Game> game;
-    std::mutex gameInfoMutex;
+    std::mutex mut;
     Didax::Engine engine;
 
     std::vector<std::thread*> clientThreads;
     std::vector<int> freeId;
     std::thread* serverThread;
 
+    void prepareSocket(const char * portStr);
+
+    volatile bool clientWorkState;
+    volatile bool waitForInitState;
     void clientWork(int fd);
-    void serverWork();
+
+    volatile bool joinWorkState;
+    void joinWork();
+    std::string clientRegistration(int fd);
 };

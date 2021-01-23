@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <netdb.h>
+#include "Network.h"
 
 #include "ShuraServer.h"
 #include "Game.h"
@@ -17,8 +18,6 @@ public:
     ShuraClient& operator=(ShuraClient&) = delete;
     ShuraClient& operator=(ShuraClient&&) = delete;
     void run(const char * ipStr, const char * portStr);
-    void serverBinding();
-    void runGame(const std::string & name);
 private:
     bool isRunning;
     int sd;
@@ -26,7 +25,9 @@ private:
     Didax::Engine engine;
     int _id;
 
+    void prepareSocket(const char * ipStr, const char * portStr);
     std::string registerClient();
+    void serverBinding();
 
 
 };
