@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <type_traits>
+#include <thread>
 
 #include <nlohmann/json.hpp>
 #include <SFML/Graphics.hpp>
@@ -92,6 +93,15 @@ public:
         _window.getWindow().setView(vi);
     }
 
+    void lock()
+    {
+        _mutex.lock();
+    }
+
+    void unlock()
+    {
+        _mutex.unlock();
+    }
     
 
 private:
@@ -108,6 +118,7 @@ private:
 
     int _entityAdded = 0;
 
+    std::mutex _mutex;
 
 private:
 

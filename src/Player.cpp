@@ -110,7 +110,7 @@ float Player::getDirection()const
     return direction;
 }
 
-void Player::spawnBullets(const std::vector<Didax::Entity_t *> & obst, const std::vector<Didax::Animable<Player> *> & players, Didax::Engine * eng)
+void Player::spawnBullets(std::vector<Didax::Sprite<Bullet> *> & bullets)
 {
     artifactTimer = 0.4f;
 
@@ -122,39 +122,33 @@ void Player::spawnBullets(const std::vector<Didax::Entity_t *> & obst, const std
     {
         x = 280 * cos((direction-90)*PI/180);
         y = 280 * sin((direction-90)*PI/180);
+    }  
+
+    float v_x[4], v_y[4];
+
+    v_x[0] = 450 * cos((bulletAngle)*PI/180)+x;
+    v_y[0] = 450 * sin((bulletAngle)*PI/180)+y;
+    v_x[1] = 450 * cos((bulletAngle+90)*PI/180)+x;
+    v_y[1] = 450 * sin((bulletAngle+90)*PI/180)+y;
+    v_x[2] = 450 * cos((bulletAngle+180)*PI/180)+x;
+    v_y[2] = 450 * sin((bulletAngle+180)*PI/180)+y;
+    v_x[3] = 450 * cos((bulletAngle+270)*PI/180)+x;
+    v_y[3] = 450 * sin((bulletAngle+270)*PI/180)+y;
+
+    int i = 0;
+    int j = 0;
+    while(i< 4)
+    {
+        if(bullets[j]->getGameObject()->speed.x == 0)
+        {
+            bullets[j]->getGameObject()->setPosition(sf::Vector2f(posx, posy));
+            bullets[j]->getGameObject()->speed.x = v_x[i];
+            bullets[j]->getGameObject()->speed.y = v_y[i];
+            i++;
+        }
+        j++;
     }
-    
 
-    float v_x1 = 450 * cos((bulletAngle)*PI/180)+x;
-    float v_y1 = 450 * sin((bulletAngle)*PI/180)+y;
-    float v_x2 = 450 * cos((bulletAngle+90)*PI/180)+x;
-    float v_y2 = 450 * sin((bulletAngle+90)*PI/180)+y;
-    float v_x3 = 450 * cos((bulletAngle+180)*PI/180)+x;
-    float v_y3 = 450 * sin((bulletAngle+180)*PI/180)+y;
-    float v_x4 = 450 * cos((bulletAngle+270)*PI/180)+x;
-    float v_y4 = 450 * sin((bulletAngle+270)*PI/180)+y;
-
-    std::shared_ptr<Bullet> t1 = std::make_shared<Bullet>(sf::Vector2f{posx,posy},sf::Vector2f{v_x1,v_y1}, _bullets);
-    std::shared_ptr<Bullet> t2 = std::make_shared<Bullet>(sf::Vector2f{posx,posy},sf::Vector2f{v_x2,v_y2}, _bullets);
-    std::shared_ptr<Bullet> t3 = std::make_shared<Bullet>(sf::Vector2f{posx,posy},sf::Vector2f{v_x3,v_y3}, _bullets);
-    std::shared_ptr<Bullet> t4 = std::make_shared<Bullet>(sf::Vector2f{posx,posy},sf::Vector2f{v_x4,v_y4}, _bullets);
-
-    auto e = eng->addEntity<Didax::Sprite<Bullet>>(t1,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(players);
-    _bullets->push_back(e);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t2,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(players);
-    _bullets->push_back(e);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t3,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(players);
-    _bullets->push_back(e);
-    e = eng->addEntity<Didax::Sprite<Bullet>>(t4,"bullet");
-    e->getGameObject()->addObstacles(obst);
-    e->getGameObject()->addPlayers(players);
-    _bullets->push_back(e);
 }
 
 float  Player::getArtifactTimmer()const
@@ -265,4 +259,19 @@ void Player::setNormal()
 bool Player::immune()
 {
     return ghost || haveArtifact || flittering;
+}
+
+void Player::setHP(int H)
+{
+    if(H != HP)
+    {
+        HP = H;
+        hpleft->getGameObject()->setHP(HP);
+    }
+}
+
+void Player::setHavingArtfact()
+{
+    haveArtifact = true;
+    me->setColor(sf::Color(255,125,125)*basicColor);
 }

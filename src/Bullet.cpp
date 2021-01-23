@@ -8,7 +8,14 @@
         me->setPosition(position);
 
         if(isCollision(eng))
-            me->setToKill();              
+        {
+            auto e = eng->addEntity<Didax::Animable<Explosion>>(std::make_shared<Explosion>(), "expl");
+            e->setPosition(position);           
+            setPosition(sf::Vector2f{-2000,-2000});
+            speed.x = 0;
+
+        }
+                          
     }
 
     void Bullet::onStart(Didax::Engine * eng)
@@ -18,12 +25,8 @@
         me->setPosition(position);
         me->setPriority(15);
     }
-
     void Bullet::onKill(Didax::Engine * eng)
-    {
-        bullets->erase(std::remove(bullets->begin(), bullets->end(), me), bullets->end());
-       auto e = eng->addEntity<Didax::Animable<Explosion>>(std::make_shared<Explosion>(), "expl");
-       e->setPosition(position);
+    {      
     }
 
     void Bullet::addObstacles(std::vector<Didax::Entity_t*> obs)
@@ -66,4 +69,10 @@
                 
         }
         return false;
+    }
+
+    void Bullet::setPosition(const sf::Vector2f & p)
+    {
+        position = p;
+        me->setPosition(position);
     }

@@ -8,10 +8,9 @@ class Player
 {
 public:
 
-    Player(int id, std::vector<Didax::Sprite<Bullet>*> * b)
+    Player(int id)
     {
         _id = id;
-        _bullets = b;
     };
 
     void addObstacles(std::vector<Didax::Entity_t*> obs);
@@ -19,10 +18,8 @@ public:
     void onUpdate(Didax::Engine * eng);
     void onStart(Didax::Engine * eng);
 
-    void setMoveState(bool moving, float direction);
-    bool getIfMooving()const;
-    float getDirection()const;
-    void spawnBullets(const std::vector<Didax::Entity_t *> & obst, const std::vector<Didax::Animable<Player> *> & players, Didax::Engine * eng);
+    
+    void spawnBullets(std::vector<Didax::Sprite<Bullet> *> & bullets);
     float getArtifactTimmer()const;
 
     void reSpawn();
@@ -32,17 +29,7 @@ public:
     void stealArtifact();
     bool isHaveingArtifact();
     void minusHP();
-    int getHP();
     float getArtifactSafe();
-
-    void setBulletAngle(float a);
-    float getBulletAngle();
-
-    void setName(const std::string & name);
-    std::string getName();
-
-    void setGhost();
-    void setNormal();
     bool immune();
 
     void setPlayers(std::vector<Didax::Animable<Player>*> pl)
@@ -50,33 +37,55 @@ public:
         players = pl;
     }
 
-    bool moving{false};          
-    float direction{0};
-    int HP{10};
+    void setName(const std::string & name);
+    std::string getName();
 
-    float bulletAngle{0};
+
+    void setMoveState(bool moving, float direction);
+    bool getIfMooving()const;
+    float getDirection()const;
+
+    void setHP(int HP);
+    int getHP();
+
+    void setBulletAngle(float a);
+    float getBulletAngle();
 
     bool flittering{false};
     float flitteringTimer{0.5};
-    const float flitteringTime{0.5};
     int flitteringLeft{6};
+
+
+    void setHavingArtfact();
+
     bool haveArtifact{false};
     float artifactTimer{0.5};
     float artifactSafe{5};
 
+    void setGhost();
+    void setNormal();
+
     bool ghost{false};
+    
 
 private:
     std::vector<Didax::Entity_t*> obstacles;
-    std::vector<Didax::Sprite<Bullet>*> * _bullets{nullptr};
+    //std::vector<Didax::Sprite<Bullet>*> * _bullets{nullptr};
     std::vector<Didax::Animable<Player>*> players;
     Didax::Animable<Player> * me = nullptr;
     Didax::Text<HPLeftText> * hpleft = nullptr;
 
     std::string name;
+    int _id;               // used to choose start position itd.
 
     sf::Color basicColor;
-    int _id;               // used to choose start position itd.
+    
+    bool moving{false};          
+    float direction{0};
+    int HP{10};
+
+    float bulletAngle{0};
+    const float flitteringTime{0.5};
    
 
 private:

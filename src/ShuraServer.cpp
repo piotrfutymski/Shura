@@ -1,7 +1,7 @@
 #include "ShuraServer.h"
 
 ShuraServer::ShuraServer()
-    :localAddress({}), sd(-1), isRunning(false), game() {}
+    :localAddress({}), sd(-1), isRunning(false), game() {freeId = {1,2,3};}
 
 void ShuraServer::run(const char * portStr)
 {
@@ -60,16 +60,19 @@ void ShuraServer::clientWork(int fd)
         if(recv(fd, tmp.data(), msgSize, MSG_WAITALL) == -1)
             break;
         try{
-            msg = nlohmann::json::parse(tmp.data());
+            msg = nlohmann::json::parse(tmp.begin(), tmp.end());
         }
         catch(const std::exception & e)
         {
             break;
         }
         
-        game->pull_Keys(msg);
-        
+        engine.lock();
+        auto s = msg.dump();
+        //std::cout<< s<<std::endl;
+        game->pull_Keys(msg);       
         game->getGameState(gameInfo);
+        engine.unlock();
         nlohmann::json response = gameInfo;
         
         if(msg.contains("register") && !gameInfo["players"].contains(msg["register"]))
@@ -77,8 +80,12 @@ void ShuraServer::clientWork(int fd)
             playerName = msg["register"];
             gameInfo["players"].emplace_back(playerName);
             response["priv"]["register"]=true;
+            response["priv"]["id"] = *(freeId.end()-1);
+            freeId.pop_back();
+            engine.lock();
+            game->addPlayer(playerName,response["priv"]["id"]);
+            engine.unlock();
             std::cout << "Player " << playerName << " joined the game."<<std::endl;
-            game->addPlayer(playerName);
         }
         else
             response["priv"]["register"]=false;
@@ -88,8 +95,9 @@ void ShuraServer::clientWork(int fd)
         write(fd, &len, sizeof(int));      
         write(fd, data.c_str(), len);             
     }
-
-    game->removePlayer(playerName);
+    engine.lock();
+    freeId.push_back(game->removePlayer(playerName));
+    engine.unlock();
     shutdown(fd, SHUT_RDWR);
     close(fd);
 }
@@ -115,11 +123,9 @@ void ShuraServer::serverWork()
 
 void ShuraServer::runGame(const std::string & name)
 {
-    Didax::Engine engine;
     engine.init("data/settings.json");
-    game = std::make_shared<Game>(false);
-    game->setName(name);
+    game = std::make_shared<Game>(false, name, 0);
     engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
-    game->addPlayer(name);
+    game->addPlayer(name,0);
     engine.run();
 }

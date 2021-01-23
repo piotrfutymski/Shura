@@ -41,10 +41,14 @@ void Engine::run()
 {
     _window.getWindow().setActive(true);
     while (_window.getWindow().isOpen())
-	{
+	{        
+        lock();     
 		update();
+        unlock();
 		render();
+        lock();       
 		input();
+        unlock();      
 	}
 }
 

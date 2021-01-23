@@ -8,9 +8,8 @@ class Bullet
 {
 public:
 
-    Bullet(const sf::Vector2f & pos, const sf::Vector2f & sp, std::vector<Didax::Sprite<Bullet> *> * b)
+    Bullet(const sf::Vector2f & pos, const sf::Vector2f & sp)
     {
-        bullets = b;
         position = pos;
         speed = sp;
     }
@@ -24,13 +23,15 @@ public:
     sf::Vector2f speed;
     sf::Vector2f position;
 
+    void setPosition(const sf::Vector2f & p);
+    
+
 private:
 
-    bool isCollision(Didax::Engine * eng);
+    bool isCollision(Didax::Engine * eng); 
 
     Didax::Sprite<Bullet> * me = nullptr;
     std::vector<Didax::Entity_t*> obstacles;
     std::vector<Didax::Animable<Player>*> players;
-    std::vector<Didax::Sprite<Bullet> *> * bullets;
 
 };

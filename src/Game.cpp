@@ -27,12 +27,7 @@ void Game::onUpdate(Didax::Engine * eng)
 
         if(p == _playerArtifact && p->getGameObject()->getArtifactTimmer() < 0)
         {
-            std::vector<Didax::Entity_t *> obst;
-            for(auto & e: _wall)
-                obst.push_back(e);
-            for(auto &p: _players)
-                obst.push_back(p);
-            p->getGameObject()->spawnBullets(obst, _players, eng);
+            p->getGameObject()->spawnBullets(_bullets);
         }
     }
 
@@ -77,14 +72,19 @@ void Game::onStart(Didax::Engine * eng)
     createTilesInRectangle(sf::IntRect{1,19,10,2},"wall", eng);
     createTilesInRectangle(sf::IntRect{29,19,10,2},"wall", eng);
     createTilesInRectangle(sf::IntRect{19,19,2,2},"wall", eng);
-    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(0, &_bullets), "Player1"));
-    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(1, &_bullets), "Player2"));
-    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(2, &_bullets), "Player3"));
-    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(3, &_bullets), "Player4"));
+    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(0), "Player1"));
+    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(1), "Player2"));
+    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(2), "Player3"));
+    _players.push_back(eng->addEntity<Didax::Animable<Player>>(std::make_shared<Player>(3), "Player4"));
     for(auto p: _players)
     {
         p->getGameObject()->setGhost();
+        p->getGameObject()->setPlayers(_players);
     }
+
+    _players[_id]->getGameObject()->setName(name);
+    _playerMain = _players[_id];
+    _playerMain->getGameObject()->setNormal();
 
     bool art = false;
     while(!art)
@@ -102,8 +102,9 @@ void Game::onStart(Didax::Engine * eng)
         if(ud)
         {
             art = true;
-            auto e = eng->addEntity<Didax::Sprite<Artifact>>(std::make_shared<Artifact>(_floor[n]->getPosition(), _artifact), "Artifact");
+            auto e = eng->addEntity<Didax::Sprite<Artifact>>(std::make_shared<Artifact>(_floor[n]->getPosition(), isArtifact), "Artifact");
             e->getGameObject()->addPlayers(_players);
+            artifact = e;
         }
     }
 
@@ -120,6 +121,23 @@ void Game::onStart(Didax::Engine * eng)
         }
         _players[i]->getGameObject()->addObstacles(obst);
     }
+
+    std::vector<Didax::Entity_t *> obst;
+            for(auto & e: _wall)
+                obst.push_back(e);
+            for(auto &p: _players)
+                obst.push_back(p);
+
+    for (int i = 0; i < 500; i++)
+    {
+        std::shared_ptr<Bullet> t1 = std::make_shared<Bullet>(sf::Vector2f{-2000,-2000},sf::Vector2f{0,0});
+        auto e = eng->addEntity<Didax::Sprite<Bullet>>(t1,"bullet");
+        e->getGameObject()->addObstacles(obst);
+        e->getGameObject()->addPlayers(_players);
+        _bullets.push_back(e);
+    }
+    
+
 
 }
 void Game::onInput(Didax::Engine * eng, const sf::Event & e)
@@ -161,144 +179,156 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
 }
 
 
-void Game::push_Keys(nlohmann::json& gameInfo) const
+void Game::push_Keys(nlohmann::json & gameInfo)
 {
-    gameInfo[name]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-    gameInfo[name]["A"] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-    gameInfo[name]["S"] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-    gameInfo[name]["D"] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-    gameInfo[name]["angle"] = _playerMain->getGameObject()->getBulletAngle();
+    gameInfo[std::to_string(_id)]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+    gameInfo[std::to_string(_id)]["A"] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+    gameInfo[std::to_string(_id)]["S"] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+    gameInfo[std::to_string(_id)]["D"] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+    gameInfo[std::to_string(_id)]["angle"] = _playerMain->getGameObject()->getBulletAngle();
 }
-void Game::pull_Keys(const nlohmann::json& gameInfo)
+void Game::pull_Keys(nlohmann::json & gameInfo)
 {
-    for(auto p: _players)
-    {
-        std::string pName = p->getGameObject()->getName();
-        if(!gameInfo.contains(pName))
-            break;
-        if(gameInfo[pName]["W"] && gameInfo[pName]["D"])
+    for(int i = 0; i < 4; i++)
+    {   
+        auto p = _players[i];
+        if(!gameInfo.contains(std::to_string(i)))
+            continue;
+        if(gameInfo[std::to_string(i)]["W"] && gameInfo[std::to_string(i)]["D"])
             p->getGameObject()->setMoveState(true, 45.f);
-        else if(gameInfo[pName]["D"] && gameInfo[pName]["S"])
+        else if(gameInfo[std::to_string(i)]["D"] && gameInfo[std::to_string(i)]["S"])
             p->getGameObject()->setMoveState(true, 135.f);
-        else if(gameInfo[pName]["S"] && gameInfo[pName]["A"])
+        else if(gameInfo[std::to_string(i)]["S"] && gameInfo[std::to_string(i)]["A"])
             p->getGameObject()->setMoveState(true, 225.f);
-        else if(gameInfo[pName]["A"] && gameInfo[pName]["W"])
+        else if(gameInfo[std::to_string(i)]["A"] && gameInfo[std::to_string(i)]["W"])
             p->getGameObject()->setMoveState(true, 315.f);
-        else if(gameInfo[pName]["W"])
+        else if(gameInfo[std::to_string(i)]["W"])
             p->getGameObject()->setMoveState(true, 0.f);
-        else if(gameInfo[pName]["D"])
+        else if(gameInfo[std::to_string(i)]["D"])
             p->getGameObject()->setMoveState(true, 90.f);
-        else if(gameInfo[pName]["S"])
+        else if(gameInfo[std::to_string(i)]["S"])
             p->getGameObject()->setMoveState(true, 180.f);
-        else if(gameInfo[pName]["A"])
+        else if(gameInfo[std::to_string(i)]["A"])
             p->getGameObject()->setMoveState(true, 270.f);
         else 
-            p->getGameObject()->setMoveState(true, p->getGameObject()->getDirection());
+            p->getGameObject()->setMoveState(false, p->getGameObject()->getDirection());
 
-        p->getGameObject()->setBulletAngle(gameInfo[pName]["angle"]);
+        p->getGameObject()->setBulletAngle(gameInfo[std::to_string(i)]["angle"]);
     }
 }
 
-void Game::setName(const std::string & n)
+void Game::getGameState(nlohmann::json & gameInfo)     //SERVER
 {
-    name = n;
-}
-
-std::string Game::getName()
-{
-    return name;
-}
-
-void Game::getGameState(nlohmann::json& gameInfo)const       //SERVER
-{
-    for(auto p : _players)
+    for(int i = 0; i < 4; i++)
     {   
-        auto pname = p->getGameObject()->getName();
-        gameInfo[pname]["moving"] = p->getGameObject()->moving;
-        gameInfo[pname]["direction"] = p->getGameObject()->direction;
-        gameInfo[pname]["HP"] = p->getGameObject()->HP;
-        gameInfo[pname]["bullet"] = p->getGameObject()->bulletAngle;
-        gameInfo[pname]["flittering"] = p->getGameObject()->flittering;
-        gameInfo[pname]["flitteringTimer"] = p->getGameObject()->flitteringTimer;
-        gameInfo[pname]["flitterinLeft"] = p->getGameObject()->flitteringLeft;
-        gameInfo[pname]["haveArtifact"] = p->getGameObject()->haveArtifact;
-        gameInfo[pname]["artifactTimer"] = p->getGameObject()->artifactTimer;
-        gameInfo[pname]["artifactSafe"] = p->getGameObject()->artifactSafe;
-        gameInfo[pname]["ghost"] = p->getGameObject()->ghost;
+        auto p = _players[i];
+        gameInfo[std::to_string(i)]["moving"] = p->getGameObject()->getIfMooving();
+        gameInfo[std::to_string(i)]["direction"] = (int)(p->getGameObject()->getDirection());
+        gameInfo[std::to_string(i)]["HP"] = p->getGameObject()->getHP();
+        gameInfo[std::to_string(i)]["flittering"] = p->getGameObject()->flittering;
+        gameInfo[std::to_string(i)]["flitteringTimer"] = p->getGameObject()->flitteringTimer;
+        gameInfo[std::to_string(i)]["flitterinLeft"] = p->getGameObject()->flitteringLeft;
+        gameInfo[std::to_string(i)]["haveArtifact"] = p->getGameObject()->haveArtifact;
+        gameInfo[std::to_string(i)]["artifactTimer"] = p->getGameObject()->artifactTimer;
+        gameInfo[std::to_string(i)]["artifactSafe"] = p->getGameObject()->artifactSafe;
+        gameInfo[std::to_string(i)]["ghost"] = p->getGameObject()->ghost;
+        gameInfo[std::to_string(i)]["px"] = (int)(p->getPosition().x);
+        gameInfo[std::to_string(i)]["py"] = (int)(p->getPosition().y);
+        gameInfo[std::to_string(i)]["name"] = p->getGameObject()->getName();
     } 
-    if(*_artifact == nullptr)
+    if(!(*isArtifact))
     {
-        gameInfo["no_artifact"] = false;
+        gameInfo["no_artifact"] = true;
         gameInfo["artifact_x"] = 0;
         gameInfo["artifact_y"] = 0;
     }
     else
     {
-        gameInfo["no_artifact"] = true;
-        gameInfo["artifact_x"] = (*_artifact)->getGameObject()->position.x;
-        gameInfo["artifact_y"] = (*_artifact)->getGameObject()->position.y;
+        gameInfo["no_artifact"] = false;
+        gameInfo["artifact_x"] = (int)(artifact->getGameObject()->getPosition().x);
+        gameInfo["artifact_y"] = (int)(artifact->getGameObject()->getPosition().y);
     }
 
+    for (int i = 0; i < 500; i++)
+    {
+        if(_bullets[i]->getGameObject()->speed.x != 0)
+        {
+            gameInfo["bulltes"][std::to_string(i)]["px"] = (int)(_bullets[i]->getGameObject()->position.x);
+            gameInfo["bulltes"][std::to_string(i)]["py"] = (int)(_bullets[i]->getGameObject()->position.y);
+            gameInfo["bulltes"][std::to_string(i)]["vx"] = (int)(_bullets[i]->getGameObject()->speed.x);
+            gameInfo["bulltes"][std::to_string(i)]["vy"] = (int)(_bullets[i]->getGameObject()->speed.y);
+        }      
+    }
 }
 void Game::actualizeState(nlohmann::json & gameInfo)   //CLIENT
 {
-    for(nlohmann::json::iterator it = gameInfo["players"].begin(); it !=gameInfo["players"].end(); it++)
-    {
-        bool isthere = false;
-        for(auto p: _players)
-            if((*it) == p->getGameObject()->getName())
-            {
-                isthere = true;
-                break;
-            }             
+    //std::cout<<gameInfo.dump()<<std::endl;
 
-        if(!isthere)
-            addPlayer(name);
+    for(int i = 0; i < 4; i++)
+    {    
+        auto p = _players[i];
+        if(!gameInfo.contains(std::to_string(i)))
+            continue;
+        p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);
+        p->getGameObject()->setHP(gameInfo[std::to_string(i)]["HP"]) ;
+        p->getGameObject()->flittering = gameInfo[std::to_string(i)]["flittering"];
+        p->getGameObject()->flitteringTimer = gameInfo[std::to_string(i)]["flitteringTimer"];
+        p->getGameObject()->flitteringLeft = gameInfo[std::to_string(i)]["flitterinLeft"];
+        p->getGameObject()->haveArtifact = gameInfo[std::to_string(i)]["haveArtifact"];
+        p->getGameObject()->artifactTimer = gameInfo[std::to_string(i)]["artifactTimer"];
+        p->getGameObject()->artifactSafe = gameInfo[std::to_string(i)]["artifactSafe"];
+        if(gameInfo[std::to_string(i)]["ghost"])
+            p->getGameObject()->setGhost();
+        else       
+            p->getGameObject()->setNormal();
+        p->setPosition(gameInfo[std::to_string(i)]["px"], gameInfo[std::to_string(i)]["py"]);
+        if(p->getGameObject()->getName() !=  gameInfo[std::to_string(i)]["name"])
+            p->getGameObject()->setName(gameInfo[std::to_string(i)]["name"]);
     }
 
-    for(auto p : _players)
-    {   
-        auto pname = p->getGameObject()->getName();
-        p->getGameObject()->moving = gameInfo[pname]["moving"];
-        p->getGameObject()->direction = gameInfo[pname]["direction"];
-        p->getGameObject()->HP = gameInfo[pname]["HP"] ;
-        p->getGameObject()->bulletAngle = gameInfo[pname]["bullet"];
-        p->getGameObject()->flittering = gameInfo[pname]["flittering"];
-        p->getGameObject()->flitteringTimer = gameInfo[pname]["flitteringTimer"];
-        p->getGameObject()->flitteringLeft = gameInfo[pname]["flitterinLeft"];
-        p->getGameObject()->haveArtifact = gameInfo[pname]["haveArtifact"];
-        p->getGameObject()->artifactTimer = gameInfo[pname]["artifactTimer"];
-        p->getGameObject()->artifactSafe = gameInfo[pname]["artifactSafe"];
-        p->getGameObject()->ghost = gameInfo[pname]["ghost"];
+    if(!gameInfo["no_artifact"] && isArtifact && !updatedArtPos)
+    {
+        updatedArtPos = true;
+        artifact->getGameObject()->setPosition({gameInfo["artifact_x"],gameInfo["artifact_y"]});
+    }
+    else if(gameInfo["no_artifact"] && isArtifact)
+    {
+        artifact->setToKill();
     }
 
-    if(!gameInfo["no_artifact"])
+    for (int i = 0; i < 500; i++)
     {
-       (*_artifact)->getGameObject()->position.x = gameInfo["artifact_x"];
-       (*_artifact)->getGameObject()->position.x = gameInfo["artifact_y"];
-    }
-    else
-    {
-        (*_artifact)->setToKill();
+        if(gameInfo["bulltes"].contains(std::to_string(i)))
+        {
+            _bullets[i]->getGameObject()->setPosition(sf::Vector2f{gameInfo["bulltes"][std::to_string(i)]["px"], gameInfo["bulltes"][std::to_string(i)]["py"]});
+            _bullets[i]->getGameObject()->speed.x =  gameInfo["bulltes"][std::to_string(i)]["vx"];
+            _bullets[i]->getGameObject()->speed.y =  gameInfo["bulltes"][std::to_string(i)]["vy"];
+        }
+        else
+        {
+            _bullets[i]->getGameObject()->setPosition(sf::Vector2f{-2000,-2000});
+            _bullets[i]->getGameObject()->speed.x =  0;
+        }            
     }
 }
 
 
-void Game::addPlayer(const std::string & name)
+void Game::addPlayer(const std::string & name, int id)
 {
-    _players[playerCount]->getGameObject()->setNormal();
-    _players[playerCount]->getGameObject()->setName(name);
-    if(this->name == name)
-        _playerMain = _players[playerCount];
-    playerCount++;
+    _players[id]->getGameObject()->setNormal();
+    _players[id]->getGameObject()->setName(name);
 }
-void Game::removePlayer(const std::string & name)
+
+int Game::removePlayer(const std::string & name)
 {
     for (int i = 0; i < 4; i++)
     {
         if(_players[i]->getGameObject()->getName() == name)
+        {
+            _players[i]->getGameObject()->setName("");
             _players[i]->getGameObject()->setGhost();
+            return i;
+        }
     }
-    playerCount--;
-    
+    return -1;
 }

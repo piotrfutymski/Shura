@@ -33,8 +33,11 @@ private:
     bool isRunning;
     nlohmann::json gameInfo;
     std::shared_ptr<Game> game;
+    std::mutex gameInfoMutex;
+    Didax::Engine engine;
 
     std::vector<std::thread*> clientThreads;
+    std::vector<int> freeId;
     std::thread* serverThread;
 
     void clientWork(int fd);

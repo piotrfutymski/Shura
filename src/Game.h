@@ -12,40 +12,42 @@ class Game
 {
 public:
 
-    Game(bool cl):client{cl}{}
+    Game(bool cl, std::string n, int id):client{cl}, name{n}, _id{id}{ isArtifact = new bool; *isArtifact = true;}
+    ~Game(){delete isArtifact;}
 
     void onUpdate(Didax::Engine * eng);
     void onStart(Didax::Engine * eng);
     void onInput(Didax::Engine * eng, const sf::Event & e);
     void onKill(Didax::Engine * eng);
 
-    void push_Keys(nlohmann::json& gameInfo) const;         //CLIENT
-    void pull_Keys(const nlohmann::json& gameInfo);         //SERVER
+    void push_Keys(nlohmann::json & gameInfo);         //CLIENT
+    void pull_Keys(nlohmann::json & gameInfo);         //SERVER
 
-    void getGameState(nlohmann::json& gameInfo)const;       //SERVER
+    void getGameState(nlohmann::json & gameInfo);       //SERVER
     void actualizeState(nlohmann::json & gameInfo);   //CLIENT
 
-    void setName(const std::string & name);
-    std::string getName();
+    void addPlayer(const std::string & name, int id);
+    int removePlayer(const std::string & name);
 
-    void addPlayer(const std::string & name);
-    void removePlayer(const std::string & name);
 
 private:
 
     bool client{false}; 
     std::string name;
+    int _id;
 
     std::vector<Didax::Sprite<Tile>*> _floor;
     std::vector<Didax::Sprite<Tile>*> _wall;
     Didax::Animable<Player>* _playerMain{nullptr};
     Didax::Animable<Player>* _playerArtifact{nullptr};
     std::vector<Didax::Animable<Player>*> _players;
-    Didax::Sprite<Artifact> ** _artifact;
+    bool * isArtifact;
+    Didax::Sprite<Artifact>* artifact;
     std::vector<Didax::Sprite<Bullet>*>_bullets;
 
-    int playerCount = 0;
+    bool updatedArtPos = false;
 
+    
     void createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng);
 
 };

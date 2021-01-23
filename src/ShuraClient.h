@@ -23,6 +23,8 @@ private:
     bool isRunning;
     int sd;
     std::shared_ptr<Game> game;
+    Didax::Engine engine;
+    int _id;
 
     std::string registerClient();
 

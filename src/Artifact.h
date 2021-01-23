@@ -7,10 +7,11 @@ class Artifact
 {
 public:
 
-    Artifact(const sf::Vector2f & pos, Didax::Sprite<Artifact> ** & m)
+    Artifact(const sf::Vector2f & pos, bool * ex)
     {
-        m = &me;
         position = pos;
+        existsFlag = ex;
+        *existsFlag = true;
     }
 
     void onUpdate(Didax::Engine * eng)
@@ -18,7 +19,7 @@ public:
         if(isCollision())
         {
             me->setToKill(); 
-            me = nullptr;
+            *existsFlag = false;
         }          
     }
 
@@ -35,9 +36,21 @@ public:
         players = pl;
     }
 
-    sf::Vector2f position;
+    void setPosition(const sf::Vector2f & p)
+    {
+        position = p;
+        me->setPosition(position);
+    }
+
+    sf::Vector2f getPosition()
+    {
+        return position;
+    }
+    
 
 private:
+
+    sf::Vector2f position;
 
     bool isCollision()
     {
@@ -60,5 +73,6 @@ private:
 
     Didax::Sprite<Artifact> * me = nullptr;
     std::vector<Didax::Animable<Player>*> players;
+    bool * existsFlag;
 
 };

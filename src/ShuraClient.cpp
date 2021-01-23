@@ -32,12 +32,9 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
 
 void ShuraClient::runGame(const std::string & name)
 {
-    Didax::Engine engine;
     engine.init("data/settings.json");
-    game = std::make_shared<Game>(true);
-    game->setName(name);
+    game = std::make_shared<Game>(true, name, _id);
     engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
-    game->addPlayer(name);
     auto serverUpdateThread = new std::thread([this](){  this->serverBinding(); });
     engine.run();
     isRunning = false;
@@ -48,11 +45,14 @@ void ShuraClient::runGame(const std::string & name)
 void ShuraClient::serverBinding()
 {   
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(50ms);
-     nlohmann::json msg;
+    std::this_thread::sleep_for(50ms); 
      while(isRunning)
      {
+        nlohmann::json msg;
+        msg["pls_dont_be_null"] = "ok";
+        engine.lock();
         game->push_Keys(msg);
+        engine.unlock();
 
         std::string data = msg.dump();
         int len = data.size();
@@ -63,9 +63,10 @@ void ShuraClient::serverBinding()
         recv(sd, &len, sizeof(int), MSG_WAITALL);
         std::vector<char> buf(len);
         recv(sd, buf.data(), len, MSG_WAITALL);
-        msg = nlohmann::json::parse(buf.data());
-        
+        msg = nlohmann::json::parse(buf.begin(), buf.end());
+        engine.lock();
         game->actualizeState(msg);
+        engine.unlock();
      }
 
 }
@@ -93,10 +94,15 @@ std::string ShuraClient::registerClient()
         std::vector<char> buf(msgSize);
         if(recv(sd, buf.data(), msgSize, MSG_WAITALL) == -1)
             throw std::runtime_error("register error");
-        msg = nlohmann::json::parse(buf.data());
+        msg = nlohmann::json::parse(buf.begin(), buf.end());
         if(msg["priv"]["register"])
+        {
+            _id = msg["priv"]["id"]; 
             break;   
-        std::cout<< "Somebody has this name, choose another: ";   
+        }         
+        std::cout<< "Somebody has this name, choose another: ";
+          
     }
+    
     return name;
 }
