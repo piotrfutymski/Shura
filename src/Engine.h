@@ -102,9 +102,13 @@ public:
     {
         _mutex.unlock();
     }
-    
+    void sigInt()
+    {
+        interrupt = true;
+    }
 
 private:
+    volatile bool interrupt;
 
     EntityHolder_t _entities;
 

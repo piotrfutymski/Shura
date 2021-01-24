@@ -229,7 +229,7 @@ void Game::pull_Keys(nlohmann::json & gameInfo)
     }
 }
 
-void Game::updateGameJson()     //SERVER
+void Game::updateGameJson()   //SERVER
 {
     nlohmann::json tmp;
     for(int i = 0; i < 4; i++)

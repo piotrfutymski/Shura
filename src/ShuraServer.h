@@ -13,6 +13,7 @@
 #include "nlohmann/json.hpp"
 #include "Game.h"
 #include "Network.h"
+#include <condition_variable>
 
 class ShuraServer
 {

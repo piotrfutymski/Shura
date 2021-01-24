@@ -19,17 +19,19 @@ public:
     ShuraClient& operator=(ShuraClient&&) = delete;
     void run(const char * ipStr, const char * portStr);
 private:
-    bool isRunning;
+    volatile bool isRunning;
     int sd;
     std::shared_ptr<Game> game;
     Didax::Engine engine;
     int _id;
 
-    bool serverStarted{false};
+    volatile bool serverStarted;
 
     void prepareSocket(const char * ipStr, const char * portStr);
     std::string registerClient();
     void serverBinding();
 
+    bool containsName(const nlohmann::json & players, const std::string & name);
+    void deleteName(nlohmann::json & players, const std::string & name);
 
 };

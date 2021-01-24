@@ -38,11 +38,14 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
             this->serverBinding();
         }
         catch(const std::exception & e) {;}
+        engine.sigInt();
+        std::cout << "Disconnected" << std::endl;
         });
 
     while(!serverStarted){
         using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1000ms);}
+        std::this_thread::sleep_for(1000ms);
+        }
     engine.run();
     isRunning = false;
     serverUpdateThread->join();  
@@ -53,44 +56,43 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
 }
 
 void ShuraClient::serverBinding()
-{   
-    //using namespace std::chrono_literals;
-    //std::this_thread::sleep_for(50ms);
-    nlohmann::json msg; 
+{  
+    nlohmann::json msg, prevMsg; 
     do
     {
         msg = Network::receiveMsg(sd);
-        nlohmann::json imPresent;
-        imPresent["present"] = true;
-        Network::sendMsg(sd, imPresent);
+        if(msg["start"] == true)
+            break;
+        if(prevMsg != msg)
+        {
+            std::cout << "##########\n";
+            std::cout << "Players:\n";
+            for(nlohmann::json::iterator it = msg["players"].begin(); it != msg["players"].end(); it++)
+                std::cout << (*it) << "\n";
+            std::cout << "##########" << std::endl;
+        }
+        prevMsg = msg;
         
-    }while(msg["start"] == false && isRunning);
+    }while(isRunning);
     
     nlohmann::json keys;
     serverStarted = true;
     while(isRunning)
     {
-       keys["pls_dont_be_null"] = "ok";
+       //keys["pls_dont_be_null"] = "ok";
        engine.lock();
        game->push_Keys(keys);
        engine.unlock();
 
        Network::sendMsg(sd, keys);
        msg = Network::receiveMsg(sd);
-       if(msg.contains("end"))
+       if(msg["end"] == true)
             break;
             
        engine.lock();
        game->actualizeState(msg);
        engine.unlock();
     }
-
-    nlohmann::json imPresent;
-        imPresent["present"] = false;
-    Network::sendMsg(sd, imPresent);
-
-
-
 }
 
 std::string ShuraClient::registerClient()
@@ -117,3 +119,22 @@ std::string ShuraClient::registerClient()
     return name;
 }
 
+bool ShuraClient::containsName(const nlohmann::json & players, const std::string & name)
+{
+    for(nlohmann::json::const_iterator it = players.begin(); it != players.end(); it++)
+    {
+        if((*it) == name)
+            return true;
+    }
+    return false;
+}
+void ShuraClient::deleteName(nlohmann::json & players, const std::string & name)
+{
+    for(nlohmann::json::iterator it = players.begin(); it != players.end(); )
+    {
+        if((*it) == name)
+            players.erase(it);
+        else
+            it++;       
+    }
+}

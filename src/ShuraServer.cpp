@@ -120,17 +120,17 @@ void ShuraServer::clientWork(int fd)
     nlohmann::json msg, response;
     while(waitForInitState)
     {
+        response = gameInfo;
         response["start"]=false;
         Network::sendMsg(fd,response);
-        msg = Network::receiveMsg(fd);
-        if(!msg["present"])
-            throw std::runtime_error("Client disconnected");
+
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1000ms);
     }
 
     response["start"]=true;
     Network::sendMsg(fd,response);
-    
-    Network::receiveMsg(fd);
+
     while(clientWorkState)
     {
         msg = Network::receiveMsg(fd);
@@ -138,10 +138,11 @@ void ShuraServer::clientWork(int fd)
         game->pull_Keys(msg);
         engine.unlock();
         response = gameInfo;
+        response["end"]=false;
         response.merge_patch(game->getGameJson());
         Network::sendMsg(fd, response);
     }
-
+    msg = Network::receiveMsg(fd);
     response.clear();
     response["end"]=true;
     Network::sendMsg(fd,response);

@@ -32,6 +32,7 @@ int Engine::init(const std::string settingFilePath)
     _window.init(wconfig);
     _clock.restart();
     Input::setWindow(&_window.getWindow());
+    _window.getWindow().setVisible(false);
     _window.getWindow().setActive(false);
     AssetManager::loadAllAssets(_settings);
     return 0;
@@ -39,8 +40,10 @@ int Engine::init(const std::string settingFilePath)
 
 void Engine::run()
 {
+    interrupt = false;
     _window.getWindow().setActive(true);
-    while (_window.getWindow().isOpen())
+    _window.getWindow().setVisible(true);
+    while (_window.getWindow().isOpen() && !interrupt)
 	{        
         lock();     
 		update();
@@ -50,6 +53,8 @@ void Engine::run()
 		input();
         unlock();      
 	}
+    if(_window.getWindow().isOpen())
+        _window.getWindow().close();
 }
 
 void Engine::update()
