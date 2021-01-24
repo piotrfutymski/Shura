@@ -47,7 +47,7 @@ void ShuraServer::run(const char * portStr)
     while(true)
     {
         std::string input;
-        std::cin >> input;
+        std::getline(std::cin, input);
         mut.lock();
         if(gameInfo["players"].size() < 2)
         {
@@ -69,9 +69,7 @@ void ShuraServer::run(const char * portStr)
     waitForInitState = false;
     engine.run();
 
-    engine.lock();
     clientWorkState = false;
-    engine.unlock();
 
     delete serverThread;
     for(std::thread* t : clientThreads)
@@ -134,12 +132,10 @@ void ShuraServer::clientWork(int fd)
     while(clientWorkState)
     {
         msg = Network::receiveMsg(fd);
-        engine.lock();
-        game->pull_Keys(msg);
-        engine.unlock();
+        game->setClientJson(msg);
         response = gameInfo;
         response["end"]=false;
-        response.merge_patch(game->getGameJson());
+        response.merge_patch(game->getServerJson());
         Network::sendMsg(fd, response);
     }
     msg = Network::receiveMsg(fd);

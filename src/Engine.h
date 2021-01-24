@@ -93,15 +93,6 @@ public:
         _window.getWindow().setView(vi);
     }
 
-    void lock()
-    {
-        _mutex.lock();
-    }
-
-    void unlock()
-    {
-        _mutex.unlock();
-    }
     void sigInt()
     {
         interrupt = true;
@@ -121,8 +112,6 @@ private:
     void sortEntities();
 
     int _entityAdded = 0;
-
-    std::mutex _mutex;
 
 private:
 

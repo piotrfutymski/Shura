@@ -44,14 +44,10 @@ void Engine::run()
     _window.getWindow().setActive(true);
     _window.getWindow().setVisible(true);
     while (_window.getWindow().isOpen() && !interrupt)
-	{        
-        lock();     
+	{            
 		update();
-        unlock();
-		render();
-        lock();       
-		input();
-        unlock();      
+		render();      
+		input();     
 	}
     if(_window.getWindow().isOpen())
         _window.getWindow().close();

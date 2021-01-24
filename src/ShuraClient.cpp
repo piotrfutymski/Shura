@@ -39,14 +39,16 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
         }
         catch(const std::exception & e) {;}
         engine.sigInt();
+        isRunning=false;
         std::cout << "Disconnected" << std::endl;
         });
 
-    while(!serverStarted){
+    while(!serverStarted && isRunning){
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1000ms);
         }
-    engine.run();
+    if(isRunning)
+        engine.run();
     isRunning = false;
     serverUpdateThread->join();  
     delete serverUpdateThread;
@@ -75,23 +77,15 @@ void ShuraClient::serverBinding()
         
     }while(isRunning);
     
-    nlohmann::json keys;
     serverStarted = true;
     while(isRunning)
     {
-       //keys["pls_dont_be_null"] = "ok";
-       engine.lock();
-       game->push_Keys(keys);
-       engine.unlock();
-
-       Network::sendMsg(sd, keys);
+       Network::sendMsg(sd, game->getClientJson());
        msg = Network::receiveMsg(sd);
        if(msg["end"] == true)
             break;
             
-       engine.lock();
-       game->actualizeState(msg);
-       engine.unlock();
+       game->setServerJson(msg);
     }
 }
 

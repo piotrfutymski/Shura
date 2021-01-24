@@ -13,19 +13,18 @@ class Game
 {
 public:
 
-    Game(bool cl, std::string n, int id):client{cl}, name{n}, _id{id}, currJson(0) { isArtifact = new bool; *isArtifact = true;}
+    Game(bool cl, std::string n, int id):client{cl}, name{n}, _id{id}, currServerJson(0), currClientJson(0), newJson(false) { isArtifact = new bool; *isArtifact = true;}
     ~Game(){delete isArtifact;}
 
     void onUpdate(Didax::Engine * eng);
     void onStart(Didax::Engine * eng);
     void onInput(Didax::Engine * eng, const sf::Event & e);
     void onKill(Didax::Engine * eng);
-    nlohmann::json getGameJson();
 
-    void push_Keys(nlohmann::json & gameInfo);         //CLIENT
-    void pull_Keys(nlohmann::json & gameInfo);         //SERVER
-
-    void actualizeState(nlohmann::json & gameInfo);   //CLIENT
+    nlohmann::json getServerJson();
+    nlohmann::json getClientJson();
+    void setServerJson(nlohmann::json & gameInfo);
+    void setClientJson(nlohmann::json & gameInfo);
 
     void addPlayer(const std::string & name, int id);
     int removePlayer(const std::string & name);
@@ -46,10 +45,19 @@ private:
     Didax::Sprite<Artifact>* artifact;
     std::vector<Didax::Sprite<Bullet>*>_bullets;
 
+    static const int jsonBufferSize = 100;
     bool updatedArtPos = false;
-    nlohmann::json gameJson[2];
-    int currJson;
-    void updateGameJson();
+    nlohmann::json serverJson[jsonBufferSize];
+    nlohmann::json clientJson[jsonBufferSize];
+    volatile int currServerJson;
+    volatile int currClientJson;
+    void updateServerJson();
+    void updateClientJson();
+    volatile bool newJson;
+
+    void updateGameFromJson();
+
+
     void createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng);
 
 };
