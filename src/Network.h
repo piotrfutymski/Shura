@@ -26,7 +26,9 @@ static void sendMsg(int fd, const nlohmann::json &msg)
 {
     std::string data = msg.dump();
     int len = data.length();
-    write(fd, &len, sizeof(int));      
-    write(fd, data.c_str(), len);   
+    if(send(fd, &len, sizeof(int),MSG_NOSIGNAL) < 1)
+          throw std::runtime_error("send error");
+    if(send(fd, data.c_str(), len,MSG_NOSIGNAL) < 1)
+        throw std::runtime_error("send error");       
 }
 };

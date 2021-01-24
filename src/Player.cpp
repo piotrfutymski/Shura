@@ -112,7 +112,7 @@ float Player::getDirection()const
 
 void Player::spawnBullets(std::vector<Didax::Sprite<Bullet> *> & bullets)
 {
-    artifactTimer = 0.4f;
+    artifactTimer = 0.12f;
 
     auto posx = me->getPosition().x + me->getSize().x/2;
     auto posy = me->getPosition().y + me->getSize().y/2;

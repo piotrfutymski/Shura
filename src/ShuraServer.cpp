@@ -32,6 +32,10 @@ void ShuraServer::run(const char * portStr)
     std::cout<< "Choose your hero name: ";
     std::string name;
     std::cin>>name;
+    engine.init("data/settings.json");
+    game = std::make_shared<Game>(false, name, 0);
+    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
+    game->addPlayer(name,0);
     gameInfo["players"].emplace_back(name);
 
     std::cout << "Server running on " << portStr << std::endl;
@@ -61,14 +65,8 @@ void ShuraServer::run(const char * portStr)
     mut.unlock();
     serverThread->join();
 
-    engine.init("data/settings.json");
-    game = std::make_shared<Game>(false, name, 0);
-    engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
-    game->addPlayer(name,0);
-
     clientWorkState = true;
     waitForInitState = false;
-
     engine.run();
 
     engine.lock();
@@ -94,7 +92,7 @@ std::string ShuraServer::clientRegistration(int fd)
         nlohmann::json msg = Network::receiveMsg(fd);
         nlohmann::json response;
         mut.lock();
-        if(joinWorkState && msg.contains("register") && !gameInfo["players"].contains(msg["register"]))
+        if(joinWorkState && msg.contains("register") && !containsName(gameInfo["players"],msg["register"]))
         {
             playerName = msg["register"];
             gameInfo["players"].emplace_back(playerName);
@@ -122,18 +120,23 @@ void ShuraServer::clientWork(int fd)
     nlohmann::json msg, response;
     while(waitForInitState)
     {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1000ms);
+        response["start"]=false;
+        Network::sendMsg(fd,response);
+        msg = Network::receiveMsg(fd);
+        if(!msg["present"])
+            throw std::runtime_error("Client disconnected");
     }
+
     response["start"]=true;
     Network::sendMsg(fd,response);
-
+    
+    Network::receiveMsg(fd);
     while(clientWorkState)
     {
         msg = Network::receiveMsg(fd);
         engine.lock();
         game->pull_Keys(msg);
-        engine.lock();
+        engine.unlock();
         response = gameInfo;
         response.merge_patch(game->getGameJson());
         Network::sendMsg(fd, response);
@@ -162,11 +165,11 @@ void ShuraServer::joinWork()
                     if(playerName != "")
                         this->clientWork(fd); 
                 }
-                catch(std::exception){;}
+                catch(const std::exception & e){;}
                 if(playerName != "")
                 {
                     mut.lock();
-                    this->gameInfo["players"].erase(playerName);
+                    deleteName(this->gameInfo["players"],playerName);
                     freeId.push_back(game->removePlayer(playerName));
                     std::cout << "Player " << playerName << " left the game."<<std::endl;
                     std::cout << "##########\n";
@@ -186,5 +189,25 @@ void ShuraServer::joinWork()
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2000ms);
         }
+    }
+}
+
+bool ShuraServer::containsName(const nlohmann::json & players, const std::string & name)
+{
+    for(nlohmann::json::const_iterator it = players.begin(); it != players.end(); it++)
+    {
+        if((*it) == name)
+            return true;
+    }
+    return false;
+}
+void ShuraServer::deleteName(nlohmann::json & players, const std::string & name)
+{
+    for(nlohmann::json::iterator it = players.begin(); it != players.end(); )
+    {
+        if((*it) == name)
+            players.erase(it);
+        else
+            it++;       
     }
 }

@@ -20,13 +20,13 @@ public:
     void setHP(int hp)
     {
         _hp = hp;
-        me->setText(sf::String(name)+ L":  "+sf::String(std::to_string(_hp)));
+        me->setText(sf::String(name)+ L":  "+sf::String(std::to_string(_hp))+L"HP");
     }
 
     void setName(const std::string & n)
     {
         name = n;
-        me->setText(sf::String(name)+ L":  "+sf::String(std::to_string(_hp)));
+        me->setText(sf::String(name)+ L":  "+sf::String(std::to_string(_hp))+L"HP");
     }
 
 

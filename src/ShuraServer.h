@@ -47,4 +47,7 @@ private:
     volatile bool joinWorkState;
     void joinWork();
     std::string clientRegistration(int fd);
+
+    bool containsName(const nlohmann::json & players, const std::string & name);
+    void deleteName(nlohmann::json & players, const std::string & name);
 };

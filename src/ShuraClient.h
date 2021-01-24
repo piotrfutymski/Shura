@@ -25,6 +25,8 @@ private:
     Didax::Engine engine;
     int _id;
 
+    bool serverStarted{false};
+
     void prepareSocket(const char * ipStr, const char * portStr);
     std::string registerClient();
     void serverBinding();

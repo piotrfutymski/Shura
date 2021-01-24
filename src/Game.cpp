@@ -188,11 +188,15 @@ void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & n
 
 void Game::push_Keys(nlohmann::json & gameInfo)
 {
-    gameInfo[std::to_string(_id)]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-    gameInfo[std::to_string(_id)]["A"] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-    gameInfo[std::to_string(_id)]["S"] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-    gameInfo[std::to_string(_id)]["D"] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-    gameInfo[std::to_string(_id)]["angle"] = _playerMain->getGameObject()->getBulletAngle();
+    //gameInfo[std::to_string(_id)]["W"] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+    //gameInfo[std::to_string(_id)]["A"] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+    //gameInfo[std::to_string(_id)]["S"] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+    //gameInfo[std::to_string(_id)]["D"] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+    gameInfo[std::to_string(_id)]["angle"] = (int)(_playerMain->getGameObject()->getBulletAngle());
+    gameInfo[std::to_string(_id)]["X"] = (int)(_playerMain->getPosition().x);
+    gameInfo[std::to_string(_id)]["Y"] = (int)(_playerMain->getPosition().y);
+    gameInfo[std::to_string(_id)]["moving"] = _playerMain->getGameObject()->getIfMooving();
+    gameInfo[std::to_string(_id)]["direction"] = (int)(_playerMain->getGameObject()->getDirection());
 }
 void Game::pull_Keys(nlohmann::json & gameInfo)
 {
@@ -201,7 +205,7 @@ void Game::pull_Keys(nlohmann::json & gameInfo)
         auto p = _players[i];
         if(!gameInfo.contains(std::to_string(i)))
             continue;
-        if(gameInfo[std::to_string(i)]["W"] && gameInfo[std::to_string(i)]["D"])
+        /*if(gameInfo[std::to_string(i)]["W"] && gameInfo[std::to_string(i)]["D"])
             p->getGameObject()->setMoveState(true, 45.f);
         else if(gameInfo[std::to_string(i)]["D"] && gameInfo[std::to_string(i)]["S"])
             p->getGameObject()->setMoveState(true, 135.f);
@@ -218,9 +222,10 @@ void Game::pull_Keys(nlohmann::json & gameInfo)
         else if(gameInfo[std::to_string(i)]["A"])
             p->getGameObject()->setMoveState(true, 270.f);
         else 
-            p->getGameObject()->setMoveState(false, p->getGameObject()->getDirection());
-
+            p->getGameObject()->setMoveState(false, p->getGameObject()->getDirection());*/
         p->getGameObject()->setBulletAngle(gameInfo[std::to_string(i)]["angle"]);
+        p->setPosition(sf::Vector2f{gameInfo[std::to_string(i)]["X"], gameInfo[std::to_string(i)]["Y"]});   
+        p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);      
     }
 }
 
@@ -230,8 +235,11 @@ void Game::updateGameJson()     //SERVER
     for(int i = 0; i < 4; i++)
     {   
         auto p = _players[i];
+
+        tmp[std::to_string(i)]["X"] = p->getPosition().x;
+        tmp[std::to_string(i)]["Y"] = p->getPosition().y;
         tmp[std::to_string(i)]["moving"] = p->getGameObject()->getIfMooving();
-        tmp[std::to_string(i)]["direction"] = (int)(p->getGameObject()->getDirection());
+        tmp[std::to_string(i)]["direction"] = p->getGameObject()->getDirection();   
         tmp[std::to_string(i)]["HP"] = p->getGameObject()->getHP();
         tmp[std::to_string(i)]["flittering"] = p->getGameObject()->flittering;
         tmp[std::to_string(i)]["flitteringTimer"] = p->getGameObject()->flitteringTimer;
@@ -240,9 +248,8 @@ void Game::updateGameJson()     //SERVER
         tmp[std::to_string(i)]["artifactTimer"] = p->getGameObject()->artifactTimer;
         tmp[std::to_string(i)]["artifactSafe"] = p->getGameObject()->artifactSafe;
         tmp[std::to_string(i)]["ghost"] = p->getGameObject()->ghost;
-        tmp[std::to_string(i)]["px"] = (int)(p->getPosition().x);
-        tmp[std::to_string(i)]["py"] = (int)(p->getPosition().y);
         tmp[std::to_string(i)]["name"] = p->getGameObject()->getName();
+        
     } 
     if(!(*isArtifact))
     {
@@ -287,7 +294,12 @@ void Game::actualizeState(nlohmann::json & gameInfo)   //CLIENT
         auto p = _players[i];
         if(!gameInfo.contains(std::to_string(i)))
             continue;
-        p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);
+
+        if(_id !=i)
+        {
+            p->setPosition(sf::Vector2f{gameInfo[std::to_string(i)]["X"], gameInfo[std::to_string(i)]["Y"]});   
+            p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);
+        }
         p->getGameObject()->setHP(gameInfo[std::to_string(i)]["HP"]) ;
         p->getGameObject()->flittering = gameInfo[std::to_string(i)]["flittering"];
         p->getGameObject()->flitteringTimer = gameInfo[std::to_string(i)]["flitteringTimer"];
@@ -299,7 +311,6 @@ void Game::actualizeState(nlohmann::json & gameInfo)   //CLIENT
             p->getGameObject()->setGhost();
         else       
             p->getGameObject()->setNormal();
-        p->setPosition(gameInfo[std::to_string(i)]["px"], gameInfo[std::to_string(i)]["py"]);
         if(p->getGameObject()->getName() !=  gameInfo[std::to_string(i)]["name"])
             p->getGameObject()->setName(gameInfo[std::to_string(i)]["name"]);
     }

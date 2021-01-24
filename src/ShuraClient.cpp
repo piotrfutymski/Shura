@@ -32,13 +32,17 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
     engine.addEntity<Didax::Scriptable<Game>>(game, "Game");
 
     isRunning = true;
+    serverStarted = false;
     auto serverUpdateThread = new std::thread([this](){  
         try{
             this->serverBinding();
         }
-        catch(std::exception) {;}
+        catch(const std::exception & e) {;}
         });
 
+    while(!serverStarted){
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1000ms);}
     engine.run();
     isRunning = false;
     serverUpdateThread->join();  
@@ -51,15 +55,25 @@ void ShuraClient::run(const char *ipStr, const char *portStr)
 void ShuraClient::serverBinding()
 {   
     //using namespace std::chrono_literals;
-    //std::this_thread::sleep_for(50ms); 
-    nlohmann::json msg = Network::receiveMsg(sd);
-    if(!msg.contains("start"))
-        return;
+    //std::this_thread::sleep_for(50ms);
+    nlohmann::json msg; 
+    do
+    {
+        msg = Network::receiveMsg(sd);
+        nlohmann::json imPresent;
+        imPresent["present"] = true;
+        Network::sendMsg(sd, imPresent);
+        
+    }while(msg["start"] == false && isRunning);
+    
     nlohmann::json keys;
+    serverStarted = true;
     while(isRunning)
     {
        keys["pls_dont_be_null"] = "ok";
+       engine.lock();
        game->push_Keys(keys);
+       engine.unlock();
 
        Network::sendMsg(sd, keys);
        msg = Network::receiveMsg(sd);
@@ -70,6 +84,12 @@ void ShuraClient::serverBinding()
        game->actualizeState(msg);
        engine.unlock();
     }
+
+    nlohmann::json imPresent;
+        imPresent["present"] = false;
+    Network::sendMsg(sd, imPresent);
+
+
 
 }
 
@@ -96,3 +116,4 @@ std::string ShuraClient::registerClient()
     
     return name;
 }
+
