@@ -182,7 +182,7 @@ void ShuraServer::joinWork()
                         this->clientWork(fd); 
                 }
                 catch(const std::exception & e){;}
-                if(playerName != "")
+                if(playerName != "" && this->winner == "")
                 {
                     mut.lock();
                     MyJsonUtil::deleteName(this->gameInfo["players"],playerName);
