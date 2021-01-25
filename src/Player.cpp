@@ -11,12 +11,22 @@ void Player::onUpdate(Didax::Engine * eng)
     
     if(moving)
     {
-        bool beg = isCollision();
         float x = 280 * cos((direction-90)*PI/180)*dT;
         float y = 280 * sin((direction-90)*PI/180)*dT;
-        me->move({x,y});
-        if(isCollision() && !beg)
-            me->move({-x,-y});
+
+        auto obst = isCollision();
+        if(obst == nullptr)
+        {
+            me->move({x,y});
+        }
+        else
+        {
+            auto vec = obst->getPosition()+obst->getSize()-me->getPosition()-me->getSize();
+            if(x* vec.x < 0)
+                me->move({x,0});
+            if(y* vec.y < 0)
+                me->move({0,y});
+        }
     }
     if(HP == 0)
     {
@@ -43,9 +53,23 @@ void Player::onUpdate(Didax::Engine * eng)
             artifactSafe-= dT;
         artifactTimer-=dT;
         artifactSafe-=dT;
+        if(artifactSafe <=0)
+            circ->setVisible(true);
+        else
+            circ->setVisible(false);
     }
+    else
+    {
+        if(artifactSafe <= 0)
+            artifactSafe = 5.0;
+        circ->setVisible(false);
+    }
+        
+
     if(hpleft != nullptr)
         hpleft->setPosition(me->getPosition().x, me->getPosition().y - 30);
+    if(circ != nullptr)
+        circ->setPosition(me->getPosition().x+me->getSize().x/2-200, me->getPosition().y+me->getSize().y/2-200);
 }
 
 void Player::onStart(Didax::Engine * eng)
@@ -66,7 +90,9 @@ void Player::onStart(Didax::Engine * eng)
         basicColor = sf::Color(255,255,255);
     me->setColor(basicColor);
     
-    hpleft = eng->addEntity<Didax::Text<HPLeftText>>(std::make_shared<HPLeftText>(HP), "Text");         
+    hpleft = eng->addEntity<Didax::Text<HPLeftText>>(std::make_shared<HPLeftText>(HP), "Text");   
+    circ = eng->addEntity<Didax::Sprite<Circle>>(std::make_shared<Circle>(), "Circle"); 
+    circ->setVisible(false);     
 }  
 
 void Player::setMoveState(bool mov, float dir)

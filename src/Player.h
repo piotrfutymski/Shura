@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "Bullet.h"
 #include "HPLeftText.h"
+#include "Circle.h"
 #define PI 3.14159265
 
 class Player
@@ -74,6 +75,7 @@ private:
     std::vector<Didax::Animable<Player>*> players;
     Didax::Animable<Player> * me = nullptr;
     Didax::Text<HPLeftText> * hpleft = nullptr;
+    Didax::Sprite<Circle> * circ = nullptr;
 
     std::string name;
     int _id;               // used to choose start position itd.
@@ -90,7 +92,7 @@ private:
 
 private:
 
-    bool isCollision()
+    Didax::Entity_t *  isCollision()
     {
         for(auto o : obstacles)
         {
@@ -108,17 +110,18 @@ private:
                     {
                         if(!p->getGameObject()->immune() && !immune())
                         {
-                            return true;
+                            return o;
                         }
                         else
                             f = false; 
                     }
                 }
-                return f;
+                if(f)
+                    return o;
             }
                 
         }
-        return false;
+        return nullptr;
     }
 
 };

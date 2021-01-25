@@ -40,7 +40,8 @@ protected:
     {}
     virtual void _draw(sf::RenderTarget & target, sf::RenderStates states)const
     {
-        target.draw(_sprite, states);
+        if(this->_visible)
+            target.draw(_sprite, states);
     }
     virtual void updatePosition()
     {
