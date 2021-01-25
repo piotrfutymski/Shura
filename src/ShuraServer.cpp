@@ -132,10 +132,12 @@ void ShuraServer::clientWork(int fd)
     while(clientWorkState)
     {
         msg = Network::receiveMsg(fd);
+        mut.lock();
         game->setClientJson(msg);
+        mut.unlock();      
         response = gameInfo;
         response["end"]=false;
-        response.merge_patch(game->getServerJson());
+        response.merge_patch(game->getServerJson());      
         Network::sendMsg(fd, response);
     }
     msg = Network::receiveMsg(fd);
