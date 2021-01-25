@@ -12,6 +12,8 @@ int main(int argc, char ** argv)
       ShuraServer server;
       server.run(argv[1]);
    }
+   else
+      std::cout << "Bad args" << std::endl;
    return 0;
 }
 

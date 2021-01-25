@@ -138,7 +138,7 @@ float Player::getDirection()const
 
 void Player::spawnBullets(std::vector<Didax::Sprite<Bullet> *> & bullets)
 {
-    artifactTimer = 0.5f;
+    artifactTimer = 0.4f;
 
     auto posx = me->getPosition().x + me->getSize().x/2;
     auto posy = me->getPosition().y + me->getSize().y/2;
@@ -152,14 +152,14 @@ void Player::spawnBullets(std::vector<Didax::Sprite<Bullet> *> & bullets)
 
     float v_x[4], v_y[4];
 
-    v_x[0] = 560 * cos((bulletAngle)*PI/180)+x;
-    v_y[0] = 560 * sin((bulletAngle)*PI/180)+y;
-    v_x[1] = 560 * cos((bulletAngle+90)*PI/180)+x;
-    v_y[1] = 560 * sin((bulletAngle+90)*PI/180)+y;
-    v_x[2] = 560 * cos((bulletAngle+180)*PI/180)+x;
-    v_y[2] = 560 * sin((bulletAngle+180)*PI/180)+y;
-    v_x[3] = 560 * cos((bulletAngle+270)*PI/180)+x;
-    v_y[3] = 560 * sin((bulletAngle+270)*PI/180)+y;
+    v_x[0] =400 * cos((bulletAngle)*PI/180)+x;
+    v_y[0] =400 * sin((bulletAngle)*PI/180)+y;
+    v_x[1] =400 * cos((bulletAngle+90)*PI/180)+x;
+    v_y[1] =400 * sin((bulletAngle+90)*PI/180)+y;
+    v_x[2] =400 * cos((bulletAngle+180)*PI/180)+x;
+    v_y[2] =400 * sin((bulletAngle+180)*PI/180)+y;
+    v_x[3] =400 * cos((bulletAngle+270)*PI/180)+x;
+    v_y[3] =400 * sin((bulletAngle+270)*PI/180)+y;
 
     int i = 0;
     int j = 0;

@@ -7,13 +7,14 @@
 #include "Explosion.h"
 #include "Artifact.h"
 #include "math.h"
+#include "JsonUtil.h"
 #include <thread>
 
 class Game
 {
 public:
 
-    Game(bool cl, std::string n, int id):client{cl}, name{n}, _id{id}, currServerJson(0), currClientJson(0), newJson(false) { isArtifact = new bool; *isArtifact = true;}
+    Game(bool cl, std::string n, int id):client{cl}, name{n}, _id{id}, currServerJson(0), currClientJson(0), newJson(false) {  isArtifact = new bool; *isArtifact = true;}
     ~Game(){delete isArtifact;}
 
     void onUpdate(Didax::Engine * eng);
@@ -31,7 +32,7 @@ public:
 
 
 private:
-    
+    std::vector<std::string> alive;
     bool client{false}; 
     std::string name;
     int _id;

@@ -33,8 +33,13 @@ void Game::onUpdate(Didax::Engine * eng)
         eng->setCameraPosition(_playerMain->getPosition() + sf::Vector2f{50,70});
     auto dT = eng->getDeltaT();
 
+    if(!client)
+    {
+    alive.clear();
     for(auto p: _players)
     {
+        if(p->getGameObject()->getHP() > 0 && !p->getGameObject()->ghost)
+            alive.push_back(p->getGameObject()->getName());
         if(p->getGameObject()->isHaveingArtifact())
             _playerArtifact = p;
 
@@ -56,6 +61,7 @@ void Game::onUpdate(Didax::Engine * eng)
         {
             p->getGameObject()->spawnBullets(_bullets);
         }
+    }
     }
     if(newJson)
         updateGameFromJson();
@@ -225,6 +231,7 @@ void Game::updateClientJson()
 {
     nlohmann::json tmp;
 
+    tmp[std::to_string(_id)]["HP"] = _playerMain->getGameObject()->getHP();
     tmp[std::to_string(_id)]["angle"] = (int)(_playerMain->getGameObject()->getBulletAngle());
     tmp[std::to_string(_id)]["X"] = (int)(_playerMain->getPosition().x);
     tmp[std::to_string(_id)]["Y"] = (int)(_playerMain->getPosition().y);
@@ -243,12 +250,11 @@ void Game::updateServerJson()   //SERVER
     for(int i = 0; i < 4; i++)
     {   
         auto p = _players[i];
-
+        tmp[std::to_string(i)]["HP"] = p->getGameObject()->getHP();
         tmp[std::to_string(i)]["X"] = p->getPosition().x;
         tmp[std::to_string(i)]["Y"] = p->getPosition().y;
         tmp[std::to_string(i)]["moving"] = p->getGameObject()->getIfMooving();
-        tmp[std::to_string(i)]["direction"] = p->getGameObject()->getDirection();   
-        tmp[std::to_string(i)]["HP"] = p->getGameObject()->getHP();
+        tmp[std::to_string(i)]["direction"] = p->getGameObject()->getDirection();
         tmp[std::to_string(i)]["flittering"] = p->getGameObject()->flittering;
         tmp[std::to_string(i)]["flitteringTimer"] = p->getGameObject()->flitteringTimer;
         tmp[std::to_string(i)]["flitterinLeft"] = p->getGameObject()->flitteringLeft;
@@ -259,6 +265,15 @@ void Game::updateServerJson()   //SERVER
         tmp[std::to_string(i)]["name"] = p->getGameObject()->getName();
         
     } 
+    if(alive.size() == 1)
+    {
+        tmp["win"]=true;
+        tmp["winner"]=alive[0];
+    }
+    else
+    {
+        tmp["win"]=false;
+    }
     if(!(*isArtifact))
     {
         tmp["no_artifact"] = true;
@@ -296,15 +311,15 @@ void Game::updateGameFromJson()
         for(int i = 0; i < 4; i++)
         {    
             auto p = _players[i];
-            if(!gameInfo.contains(std::to_string(i)))
+            if(!MyJsonUtil::containsName(gameInfo, std::to_string(i)))
                 continue;
 
             if(_id !=i)
             {
                 p->setPosition(sf::Vector2f{gameInfo[std::to_string(i)]["X"], gameInfo[std::to_string(i)]["Y"]});   
                 p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);
+                p->getGameObject()->setHP(gameInfo[std::to_string(i)]["HP"]);
             }
-            p->getGameObject()->setHP(gameInfo[std::to_string(i)]["HP"]) ;
             p->getGameObject()->flittering = gameInfo[std::to_string(i)]["flittering"];
             p->getGameObject()->flitteringTimer = gameInfo[std::to_string(i)]["flitteringTimer"];
             p->getGameObject()->flitteringLeft = gameInfo[std::to_string(i)]["flitterinLeft"];
@@ -328,20 +343,29 @@ void Game::updateGameFromJson()
         {
             artifact->setToKill();
         }
-
+        if(MyJsonUtil::containsName(gameInfo, "bulltes"))
+        {
         for (int i = 0; i < 500; i++)
         {
-            if(gameInfo["bulltes"].contains(std::to_string(i)))
+            if(MyJsonUtil::containsName(gameInfo["bulltes"], std::to_string(i)))
             {
+                try
+                {
+                    std::string tmp = gameInfo["bulltes"].dump();
                 _bullets[i]->getGameObject()->setPosition(sf::Vector2f{gameInfo["bulltes"][std::to_string(i)]["px"], gameInfo["bulltes"][std::to_string(i)]["py"]});
                 _bullets[i]->getGameObject()->speed.x =  gameInfo["bulltes"][std::to_string(i)]["vx"];
                 _bullets[i]->getGameObject()->speed.y =  gameInfo["bulltes"][std::to_string(i)]["vy"];
+                }
+                catch(const std::exception& e)
+                {
+                }
             }
             else
             {
                 _bullets[i]->getGameObject()->setPosition(sf::Vector2f{-2000,-2000});
                 _bullets[i]->getGameObject()->speed.x =  0;
             }            
+        }
         }
     }
     else
@@ -350,8 +374,10 @@ void Game::updateGameFromJson()
         for(int i = 0; i < 4; i++)
         {     
             auto p = _players[i];
-            if(!gameInfo.contains(std::to_string(i)))
+
+            if(!MyJsonUtil::containsName(gameInfo, std::to_string(i)))
                 continue;
+            p->getGameObject()->setHP(gameInfo[std::to_string(i)]["HP"]) ;
             p->getGameObject()->setBulletAngle(gameInfo[std::to_string(i)]["angle"]);
             p->setPosition(sf::Vector2f{gameInfo[std::to_string(i)]["X"], gameInfo[std::to_string(i)]["Y"]});   
             p->getGameObject()->setMoveState(gameInfo[std::to_string(i)]["moving"], gameInfo[std::to_string(i)]["direction"]);      

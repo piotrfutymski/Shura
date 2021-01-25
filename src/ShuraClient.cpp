@@ -80,12 +80,13 @@ void ShuraClient::serverBinding()
     serverStarted = true;
     while(isRunning)
     {
-       Network::sendMsg(sd, game->getClientJson());
-       msg = Network::receiveMsg(sd);
-       if(msg["end"] == true)
+        Network::sendMsg(sd, game->getClientJson());
+        msg = Network::receiveMsg(sd);
+        if(msg["end"] == true)
             break;
-            
-       game->setServerJson(msg);
+        if(msg["win"] == true)
+           std::cout << msg["winner"] << " won." <<std::endl;
+        game->setServerJson(msg);
     }
 }
 
@@ -106,29 +107,15 @@ std::string ShuraClient::registerClient()
         {
             _id = msg["priv"]["id"]; 
             break;   
-        }         
-        std::cout<< "Somebody has this name, choose another: ";
+        }
+        else
+        {
+            if(msg["priv"]["cause"] == "Name taken")
+                std::cout<< "Somebody has this name, choose another: ";
+            else
+                std::cout<< "Player limit reached. Try again\n";
+        }
     }
     
     return name;
-}
-
-bool ShuraClient::containsName(const nlohmann::json & players, const std::string & name)
-{
-    for(nlohmann::json::const_iterator it = players.begin(); it != players.end(); it++)
-    {
-        if((*it) == name)
-            return true;
-    }
-    return false;
-}
-void ShuraClient::deleteName(nlohmann::json & players, const std::string & name)
-{
-    for(nlohmann::json::iterator it = players.begin(); it != players.end(); )
-    {
-        if((*it) == name)
-            players.erase(it);
-        else
-            it++;       
-    }
 }

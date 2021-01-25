@@ -90,7 +90,12 @@ std::string ShuraServer::clientRegistration(int fd)
         nlohmann::json msg = Network::receiveMsg(fd);
         nlohmann::json response;
         mut.lock();
-        if(joinWorkState && msg.contains("register") && !containsName(gameInfo["players"],msg["register"]))
+        if(gameInfo["players"].size() == 4)
+        {
+            response["priv"]["register"]=false;
+            response["priv"]["cause"]="Player limit";
+        }
+        else if(joinWorkState && MyJsonUtil::containsName(msg, "register") && !MyJsonUtil::containsName(gameInfo["players"],msg["register"]))
         {
             playerName = msg["register"];
             gameInfo["players"].emplace_back(playerName);
@@ -106,7 +111,10 @@ std::string ShuraServer::clientRegistration(int fd)
             std::cout << "##########" << std::endl;
         }
         else
+        {
             response["priv"]["register"]=false;
+            response["priv"]["cause"]="Name taken";
+        }
         mut.unlock();
         Network::sendMsg(fd,response);
     }
@@ -137,8 +145,13 @@ void ShuraServer::clientWork(int fd)
         mut.unlock();      
         response = gameInfo;
         response["end"]=false;
-        response.merge_patch(game->getServerJson());      
+        response.merge_patch(game->getServerJson());   
         Network::sendMsg(fd, response);
+        if(response["win"] == true)
+        {
+            engine.sigInt();
+            break;
+        }
     }
     msg = Network::receiveMsg(fd);
     response.clear();
@@ -168,7 +181,7 @@ void ShuraServer::joinWork()
                 if(playerName != "")
                 {
                     mut.lock();
-                    deleteName(this->gameInfo["players"],playerName);
+                    MyJsonUtil::deleteName(this->gameInfo["players"],playerName);
                     freeId.push_back(game->removePlayer(playerName));
                     std::cout << "Player " << playerName << " left the game."<<std::endl;
                     std::cout << "##########\n";
@@ -188,25 +201,5 @@ void ShuraServer::joinWork()
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2000ms);
         }
-    }
-}
-
-bool ShuraServer::containsName(const nlohmann::json & players, const std::string & name)
-{
-    for(nlohmann::json::const_iterator it = players.begin(); it != players.end(); it++)
-    {
-        if((*it) == name)
-            return true;
-    }
-    return false;
-}
-void ShuraServer::deleteName(nlohmann::json & players, const std::string & name)
-{
-    for(nlohmann::json::iterator it = players.begin(); it != players.end(); )
-    {
-        if((*it) == name)
-            players.erase(it);
-        else
-            it++;       
     }
 }

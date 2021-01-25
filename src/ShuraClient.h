@@ -31,7 +31,5 @@ private:
     std::string registerClient();
     void serverBinding();
 
-    bool containsName(const nlohmann::json & players, const std::string & name);
-    void deleteName(nlohmann::json & players, const std::string & name);
 
 };
