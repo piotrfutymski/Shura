@@ -42,6 +42,7 @@ private:
 
     void prepareSocket(const char * portStr);
 
+    std::string winner;
     volatile bool clientWorkState;
     volatile bool waitForInitState;
     void clientWork(int fd);

@@ -67,10 +67,13 @@ void ShuraServer::run(const char * portStr)
 
     clientWorkState = true;
     waitForInitState = false;
+    winner = "";
     engine.run();
 
     clientWorkState = false;
 
+    if(winner != "")
+        std::cout << winner << " won." << std::endl;
     delete serverThread;
     for(std::thread* t : clientThreads)
     {
@@ -149,6 +152,7 @@ void ShuraServer::clientWork(int fd)
         Network::sendMsg(fd, response);
         if(response["win"] == true)
         {
+            winner = response["winner"];
             engine.sigInt();
             break;
         }
