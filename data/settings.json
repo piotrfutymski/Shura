@@ -1,7 +1,7 @@
 {
   "windowSettings": {
-    "videoModeWidth": 1024,
-    "videoModeHeight": 720,
+    "videoModeWidth": 1200,
+    "videoModeHeight": 800,
     "windowStyle": 4,
     "framerateLimit": 1000
   },
