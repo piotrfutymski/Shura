@@ -190,11 +190,11 @@ void Game::onStart(Didax::Engine * eng)
 }
 void Game::onInput(Didax::Engine * eng, const sf::Event & e)
 {
-
+    //
 }
 void Game::onKill(Didax::Engine * eng)
 {
-
+    //
 }
 
 void Game::createTilesInRectangle(const sf::IntRect & rec, const std::string & name, Didax::Engine * eng)
